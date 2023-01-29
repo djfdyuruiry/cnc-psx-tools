@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33214.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FatFileParser", "FatFileParser\FatFileParser.csproj", "{A953BFC0-662F-44DF-999F-57CE9CD33D4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MixFileExtractor", "MixFileExtractor\MixFileExtractor.csproj", "{10625488-54CE-4899-9128-BA387C301BAB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A953BFC0-662F-44DF-999F-57CE9CD33D4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A953BFC0-662F-44DF-999F-57CE9CD33D4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A953BFC0-662F-44DF-999F-57CE9CD33D4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A953BFC0-662F-44DF-999F-57CE9CD33D4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10625488-54CE-4899-9128-BA387C301BAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10625488-54CE-4899-9128-BA387C301BAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10625488-54CE-4899-9128-BA387C301BAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10625488-54CE-4899-9128-BA387C301BAB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EF38B22D-2E1A-46E7-82F5-6DBB4D8D41CB}
+	EndGlobalSection
+EndGlobal
