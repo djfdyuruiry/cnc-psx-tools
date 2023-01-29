@@ -1,13 +1,23 @@
-Get-ChildItem "..\MixFileExtractor\bin\Debug\net6.0\DATA" | ForEach-Object {
-    $referenceFile = "..\example\DATA\$($_.Name)";
+param (
+    [int]$h = 4000,
+    
+    # name of the output image
+    [string]$filesHashesPath = "${PSScriptRoot}/../reference-files/file-hashes/tiberian-dawn/nod.json"
+)
 
-    if (-not (Test-Path $referenceFile -ErrorAction Ignore)) {
-        Write-Host -NoNewline "MISSING"
-    } elseif ((Get-FileHash $_).Hash -eq (Get-FileHash $referenceFile).Hash) {
-        Write-Host -NoNewline "GD_HASH"
+$fileHashes = (Get-Content -Raw $filesHashesPath) | ConvertFrom-Json
+
+Get-ChildItem "${PSScriptRoot}/../MixFileExtractor/bin/Debug/net6.0/DATA" | ForEach-Object {
+    $md5Hash = (Get-FileHash -Algorithm MD5 $_).Hash;
+    $referenceHash = $fileHashes."$($_.Name)"
+
+    if ($referenceHash -eq $null) {
+        Write-Host -NoNewline "HASH MISS"
+    } elseif ($md5Hash -eq $referenceHash) {
+        Write-Host -NoNewline "HASH PASS"
     } else {
-        Write-Host -NoNewline "BD_HASH"
+        Write-Host -NoNewline "HASH FAIL"
     }
 
-    Write-Host " -> $($_.Name)"
-}
+    Write-Host " -> $($_.Name) [${referenceHash} | ${md5Hash}]"
+} 

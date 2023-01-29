@@ -18,8 +18,8 @@ using (var fileListingReader = new StreamReader("file-listing.txt"))
         var record = line.Split(",");
 
         var currentFileName = record[0];
-        var offset = UInt32.Parse(record[1]) * 2048;
-        var length = UInt32.Parse(record[2]);
+        var offset = UInt32.Parse(record[2]) * 2048;
+        var length = UInt32.Parse(record[3]);
 
         var fileExtension = currentFileName.Split('.')[1];
 
@@ -33,18 +33,10 @@ using (var fileListingReader = new StreamReader("file-listing.txt"))
             await currentFile.WriteAsync(fileByteBuffer);
         }
 
-        var hexFileName = $"{counter.ToString("X").PadLeft(8, '0')}.{fileExtension}";
-
-        using (var hexFile = File.OpenWrite($"{outputDir}/{hexFileName}"))
-        {
-            await hexFile.WriteAsync(fileByteBuffer);
-        }
-
         var paddedLength = length.ToString().PadLeft(8, '0');
         var paddedOffset = offset.ToString().PadLeft(8, '0');
 
         Console.WriteLine($"{currentFileName.PadRight(12)}: Read {paddedLength} bytes from offset {paddedOffset}");
-        //Console.WriteLine($"{hexFileName.PadRight(12)}: Read {paddedLength} bytes from offset {paddedOffset}");
 
         line = await fileListingReader.ReadLineAsync();
         counter++;

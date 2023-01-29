@@ -31,12 +31,18 @@ using (var fatFile = File.OpenRead("DATA.FAT"))
 
 using (var listingFile = new StreamWriter("file-listing.txt"))
 {
-    foreach (var (file, dataBytes) in files)
+    var counter = 0;
+
+    foreach (var (fileName, dataBytes) in files)
     {
+        var fileExtension = fileName.Split('.')[1];
+        var hexFileName = $"{counter.ToString("X").PadLeft(8, '0')}.{fileExtension}";
+
         var offset = BitConverter.ToUInt32(dataBytes.Item1);
         var length = BitConverter.ToUInt32(dataBytes.Item2);
  
-        listingFile.WriteLine($"{file},{offset},{length}");
+        listingFile.WriteLine($"{fileName},{hexFileName},{offset},{length}");
+        counter++;
     }
 }
 
