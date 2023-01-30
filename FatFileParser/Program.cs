@@ -1,5 +1,6 @@
-﻿using CncPsxLib;
-using System.Text.Json;
+﻿using System.Text.Json;
+
+using CncPsxLib;
 
 var reader = new FatFileReader();
 var file = reader.Read("DATA.FAT");

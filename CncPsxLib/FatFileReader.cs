@@ -12,7 +12,7 @@ namespace CncPsxLib
         private static string DeserialiseAsciiString(byte[] bytes) =>
             Encoding.ASCII.GetString(bytes).Replace("\0", string.Empty);
 
-        private void ReadEntry(byte[] fileEntryBytes, Dictionary<string, FatFileEntry> entries)
+        private void ReadEntry(int index, byte[] fileEntryBytes, Dictionary<string, FatFileEntry> entries)
         {
             var fileNameBytes = fileEntryBytes[..12];
             var offsetBytes = fileEntryBytes[16..20];
@@ -29,6 +29,7 @@ namespace CncPsxLib
 
             entries[sanitisedFileName] = new FatFileEntry
             {
+                Index = index,
                 FileName = fileName,
                 OffsetInBytes = DeserialiseInt32(offsetBytes) * 2048,
                 SizeInBytes = DeserialiseInt32(sizeBytes)
@@ -40,11 +41,13 @@ namespace CncPsxLib
             // scan past file header
             fatFile.Seek(FAT_HEADER_SIZE_IN_BYTES, SeekOrigin.Begin);
 
+            var index = 0;
             var fileEntryBytes = new byte[FAT_ENTRY_SIZE_IN_BYTES];
 
             while (fatFile.Read(fileEntryBytes, 0, fileEntryBytes.Length) > 0)
             {
-                ReadEntry(fileEntryBytes, entries);
+                ReadEntry(index, fileEntryBytes, entries);
+                index++;
             }
         }
 

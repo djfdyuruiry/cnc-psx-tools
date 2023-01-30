@@ -8,10 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="DATA.MIX">
+    <ProjectReference Include="..\CncPsxLib\CncPsxLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="DATA.FAT">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="file-listing.txt">
+    <None Update="DATA.MIX">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
