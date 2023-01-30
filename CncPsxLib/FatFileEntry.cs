@@ -14,6 +14,10 @@ namespace CncPsxLib
 
         public int OffsetInBytes { get; set; }
 
+        public string HexOffsetInBytes => OffsetInBytes.ToString("X").PadLeft(8, '0');
+
         public int SizeInBytes { get; set; }
+
+        public string SizeInByteUnits => SizeInBytes.FormatAsByteUnit();
     }
 }

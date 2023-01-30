@@ -3,7 +3,7 @@
 const string outputDir = "DATA";
 
 var fatFileReader = new FatFileReader();
-var fatFile = fatFileReader.Read("DATA.FAT");
+var fatFile = await fatFileReader.Read("DATA.FAT");
 
 if (Directory.Exists(outputDir))
 {
@@ -29,6 +29,8 @@ using (var mixFile = File.OpenRead("DATA.MIX"))
         var paddedSize = entry.SizeInBytes.ToString().PadLeft(8, '0');
         var paddedOffset = entry.OffsetInBytes.ToString().PadLeft(8, '0');
 
-        Console.WriteLine($"{fileName.PadRight(12)}: Read {paddedSize} bytes from offset {paddedOffset}");
+        await Console.Out.WriteLineAsync(
+            $"{fileName.PadRight(12)}: Read {paddedSize} bytes from offset {paddedOffset}"
+        );
     }
 }

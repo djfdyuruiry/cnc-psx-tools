@@ -1,7 +1,12 @@
 {
   "profiles": {
-    "CNC PSX Tools": {
-      "commandName": "Project"
+    "Debug": {
+      "commandName": "Project",
+      "commandLineArgs": "-p ../../../../reference-files/tiberian-dawn/nod/DATA.FAT"
+    },
+    "Debug (YAML)": {
+      "commandName": "Project",
+      "commandLineArgs": "-p ../../../../reference-files/tiberian-dawn/nod/DATA.FAT -y"
     }
   }
 }
