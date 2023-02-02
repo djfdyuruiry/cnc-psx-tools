@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Debug": {
+      "commandName": "Project",
+      "commandLineArgs": "-p ../../../../reference-files/tiberian-dawn/nod/DATA.MIX"
+    }
+  }
+}

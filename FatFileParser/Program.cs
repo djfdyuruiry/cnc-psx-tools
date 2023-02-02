@@ -6,7 +6,7 @@ using YamlDotNet.Serialization;
 
 namespace FatFileParser
 { 
-    internal class Program
+    internal static class Program
     {
         private static async Task OutputFatEntriesAsTable(FatFile fatFile)
         {   
