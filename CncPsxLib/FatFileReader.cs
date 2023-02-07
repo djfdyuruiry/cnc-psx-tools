@@ -56,11 +56,6 @@ namespace CncPsxLib
 
         public async Task<FatFile> Read(string filePath)
         {
-            if (!File.Exists(filePath))
-            {
-                throw new FileNotFoundException("Specified FAT file could not be found", filePath);
-            }
-
             var entries = new Dictionary<string, FatFileEntry>();
 
             using (var fatFile = File.OpenRead(filePath))

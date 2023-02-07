@@ -1,4 +1,6 @@
-﻿using CommandLine;
+﻿using System.Text.RegularExpressions;
+
+using CommandLine;
 
 namespace MixFileExtractor
 {
@@ -26,6 +28,8 @@ namespace MixFileExtractor
         [Option(
             'e',
             "extract-files",
+            Default = new string[] { "*" },
+            Separator = ',',
             HelpText = "CSV list of filenames to extract from MIX file, supports wildcards. " +
             "Defaults to '*', which extracts all files."
         )]
@@ -34,6 +38,7 @@ namespace MixFileExtractor
         [Option(
             'i',
             "ignore-files",
+            Separator = ',',
             HelpText = "CSV list of filenames to ignore when extracting files, supports " +
             "wildcards."
         )]
@@ -48,5 +53,15 @@ namespace MixFileExtractor
         public string? OutputPath { get; set; }
 
         public string OutputPathOrDefault => OutputPath ?? MixFileName;
+
+        public IEnumerable<Regex> BuildExtractPatterns() =>
+            FilesToExtract
+                .Select(f => f.Trim().Replace(".", "[.]").Replace("*", ".+"))
+                .Select(f => new Regex(f));
+
+        public IEnumerable<Regex> BuildIgnorePatterns() =>
+            FilesToIgnore
+                .Select(f => f.Trim().Replace(".", "[.]").Replace("*", ".+"))
+                .Select(f => new Regex(f));
     }
 }

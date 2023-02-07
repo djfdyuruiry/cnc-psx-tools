@@ -1,36 +1,65 @@
-﻿using CncPsxLib;
+﻿
+using System.Text.RegularExpressions;
+
 using CommandLine;
 
-using static CncPsxLib.DirectoryExtensions;
+using CncPsxLib;
 
 namespace MixFileExtractor
 {
     internal static class Program
     {
+
+        private static async Task ExtractFile(
+            MixFile mixFile,
+            string fileName,
+            FatFileEntry entry,
+            string outputPath
+        )
+        {
+            var fileBytes = await mixFile.ReadFile(entry);
+
+            using (var currentFile = File.OpenWrite($"{outputPath}/{fileName}"))
+            {
+                await currentFile.WriteAsync(fileBytes);
+            }
+
+            var paddedSize = entry.SizeInBytes.ToString().PadLeft(8, '0');
+            var paddedOffset = entry.OffsetInBytes.ToString().PadLeft(8, '0');
+
+            await Console.Out.WriteLineAsync(
+                $"{fileName.PadRight(12)}: Read {paddedSize} bytes from offset {paddedOffset}"
+            );
+        }
+
+        private static bool ShouldExtractFile(
+            IEnumerable<Regex> filesToExtract,
+            IEnumerable<Regex> filesToIgnore,
+            string fileName
+        ) =>
+            filesToExtract.Any(r => r.IsMatch(fileName))
+            && !filesToIgnore.Any(r => r.IsMatch(fileName));
+
         private static async Task<int> Run(CliOptions opts)
         {
             var fatFileReader = new FatFileReader();
             var fatFile = await fatFileReader.Read(opts.FatFilePathOrDefault);
 
-            EnsureDirectoryExists(opts.OutputPathOrDefault);
+            Directory.CreateDirectory(opts.OutputPathOrDefault);
+
+            var filesToExtract = opts.BuildExtractPatterns();
+            var filesToIgnore = opts.BuildIgnorePatterns();
 
             using (var mixFile = MixFile.Open(opts.MixFilePath))
             {
                 foreach (var (fileName, entry) in fatFile.FileEntries)
                 {
-                    var fileBytes = await mixFile.ReadFile(entry);
-
-                    using (var currentFile = File.OpenWrite($"{opts.OutputPathOrDefault}/{fileName}"))
+                    if (!ShouldExtractFile(filesToExtract, filesToIgnore, fileName))
                     {
-                        await currentFile.WriteAsync(fileBytes);
+                        continue;
                     }
 
-                    var paddedSize = entry.SizeInBytes.ToString().PadLeft(8, '0');
-                    var paddedOffset = entry.OffsetInBytes.ToString().PadLeft(8, '0');
-
-                    await Console.Out.WriteLineAsync(
-                        $"{fileName.PadRight(12)}: Read {paddedSize} bytes from offset {paddedOffset}"
-                    );
+                    await ExtractFile(mixFile, fileName, entry, opts.OutputPathOrDefault);
                 }
             }
 

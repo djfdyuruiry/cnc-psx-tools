@@ -1,8 +1,8 @@
-﻿using CncPsxLib;
-using CommandLine;
-
+﻿using CommandLine;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
+
+using CncPsxLib;
 
 namespace FatFileParser
 { 

@@ -1,5 +1,4 @@
-﻿using CommandLine.Text;
-using CommandLine;
+﻿using CommandLine;
 
 namespace FatFileParser
 {
