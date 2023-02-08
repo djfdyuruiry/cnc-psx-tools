@@ -57,13 +57,11 @@ namespace CncPsxLib
 
         private async Task ReadEntries(
             FileStream fatFile,
+            int fileEntryCount,
             Dictionary<string, FatFileEntry> entries,
             Dictionary<string, FatFileEntry> appendixEntries
         )
         {
-            var (_, fileEntryCountBytes) = await fatFile.ReadExactlyAsync(FAT_HEADER_SIZE_IN_BYTES);
-            var fileEntryCount = DeserialiseInt32(fileEntryCountBytes);
-
             var index = 1;
 
             while (true)
@@ -82,6 +80,7 @@ namespace CncPsxLib
 
         public async Task<FatFile> Read(string filePath)
         {
+            int fileEntryCount, extraFileEntryCount = 0;
             var entries = new Dictionary<string, FatFileEntry>();
             var appendixEntries = new Dictionary<string, FatFileEntry>();
 
@@ -92,13 +91,19 @@ namespace CncPsxLib
                     throw new InvalidDataException($"Path is not a FAT file or contains zero entries: {filePath}");
                 }
 
-                await ReadEntries(fatFile, entries, appendixEntries);
+                var (_, fileHeaderBytes) = await fatFile.ReadExactlyAsync(FAT_HEADER_SIZE_IN_BYTES);
+                fileEntryCount = DeserialiseInt32(fileHeaderBytes[..4]);
+                extraFileEntryCount = DeserialiseInt32(fileHeaderBytes[4..]);
+
+                await ReadEntries(fatFile, fileEntryCount, entries, appendixEntries);
             }
 
             return new FatFile
             {
                 Path = filePath,
+                EntryCount = fileEntryCount,
                 FileEntries = entries,
+                ExtraEntryCount = extraFileEntryCount,
                 ExtraFileEntries = appendixEntries
             };
         }

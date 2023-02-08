@@ -8,8 +8,8 @@
 
         public Dictionary<string, FatFileEntry> ExtraFileEntries { get; set; }
 
-        public int EntryCount => FileEntries.Count;
+        public int EntryCount { get; set; }
 
-        public int ExtraEntryCount => ExtraFileEntries.Count;
+        public int ExtraEntryCount { get; set; }
     }
 }
