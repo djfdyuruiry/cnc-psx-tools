@@ -71,7 +71,7 @@ namespace MixFileExtractor
             using (var mixFile = MixFile.Open(opts.MixFilePath))
             {
                 await ExtractMixFileEntries(
-                    mixFile, filesToExtract, filesToIgnore, fatFile.FileEntries, opts.OutputPathOrDefault
+                    mixFile, filesToExtract, filesToIgnore, fatFile.MixFileEntries, opts.OutputPathOrDefault
                 );
 
                 // note: extra entries don't have enough data at the given offset to be valid, hence not extracted

@@ -4,8 +4,24 @@ namespace CncPsxLib
 {
     public class FatFileEntry
     {
-        private const int FAT_ENTRY_SIZE_IN_BYTES = 28;
-        private const int FAT_FILE_CHUNK_SIZE = 2048;
+        public const int FAT_ENTRY_SIZE_IN_BYTES = 28;
+        public const int FAT_FILE_CHUNK_SIZE = 2048;
+
+        public static FatFileEntry FromBytes(int entryIndex, byte[] bytes)
+        {
+            if (bytes.Length < FAT_ENTRY_SIZE_IN_BYTES)
+            {
+                throw new InvalidDataException($"Unable to parse FAT file entry, expected {FAT_ENTRY_SIZE_IN_BYTES} bytes, got {bytes.Length}");
+            }
+
+            return new FatFileEntry
+            {
+                Index = entryIndex,
+                FileName = Encoding.ASCII.GetString(bytes[..12]).Replace("\0", string.Empty),
+                OffsetInBytes = (BitConverter.ToInt32(bytes[16..20])) * FAT_FILE_CHUNK_SIZE,
+                SizeInBytes = BitConverter.ToInt32(bytes[20..])
+            };
+        }
 
         public int Index { get; set; }
 

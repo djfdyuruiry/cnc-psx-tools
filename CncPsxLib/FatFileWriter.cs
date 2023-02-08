@@ -19,11 +19,11 @@ namespace CncPsxLib
         {
             using (var fatFileHandle = File.OpenWrite(filePath))
             {
-                await fatFileHandle.WriteAsync(BitConverter.GetBytes(fatFile.EntryCount));
-                await fatFileHandle.WriteAsync(BitConverter.GetBytes(fatFile.ExtraEntryCount));
+                await fatFileHandle.WriteAsync(BitConverter.GetBytes(fatFile.MixEntryCount));
+                await fatFileHandle.WriteAsync(BitConverter.GetBytes(fatFile.XaEntryCount));
 
-                await WriteEntries(fatFileHandle, fatFile.FileEntries);
-                await WriteEntries(fatFileHandle, fatFile.ExtraFileEntries);
+                await WriteEntries(fatFileHandle, fatFile.MixFileEntries);
+                await WriteEntries(fatFileHandle, fatFile.XaFileEntries);
             }
         }
     }

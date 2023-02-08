@@ -1,111 +1,74 @@
-﻿using System.Text;
-
-namespace CncPsxLib
+﻿namespace CncPsxLib
 {
     public class FatFileReader
     {
-        private const int FAT_HEADER_SIZE_IN_BYTES = 8;
-        private const int FAT_ENTRY_SIZE_IN_BYTES = 28;
-        private const int FAT_FILE_CHUNK_SIZE = 2048;
-
-        private static int DeserialiseInt32(byte[] bytes) => BitConverter.ToInt32(bytes);
-
-        private static string DeserialiseAsciiString(byte[] bytes) =>
-            Encoding.ASCII.GetString(bytes).Replace("\0", string.Empty);
-
         private void ReadEntry(
             int index,
             byte[] fileEntryBytes,
-            int fileEntryCount,
-            Dictionary<string, FatFileEntry> entries,
-            Dictionary<string, FatFileEntry> appendixEntries
+            FatFile fatFile
         )
         {
-            var fileNameBytes = fileEntryBytes[..12];
-            var offsetBytes = fileEntryBytes[16..20];
-            var sizeBytes = fileEntryBytes[20..];
+            var fatEntry = FatFileEntry.FromBytes(index, fileEntryBytes); 
+            var sanitisedFileName = fatEntry.FileName;
 
-            var fileName = DeserialiseAsciiString(fileNameBytes);
-            var sanitisedFileName = fileName;
-
-            if (entries.ContainsKey(fileName))
+            if (fatFile.MixFileEntries.ContainsKey(sanitisedFileName))
             {
                 // detect duplicate filename entries
-                sanitisedFileName = fileName.Replace(".", "-1.");
+                sanitisedFileName = sanitisedFileName.Replace(".", "-1.");
             }
 
-            var offsetInChunks = DeserialiseInt32(offsetBytes);
-
-            var fatEntry = new FatFileEntry
+            if (index <= fatFile.MixEntryCount)
             {
-                Index = index,
-                FileName = fileName,
-                OffsetInBytes = offsetInChunks * FAT_FILE_CHUNK_SIZE,
-                SizeInBytes = DeserialiseInt32(sizeBytes)
-            };
-
-            if (index <= fileEntryCount)
-            {
-                entries[sanitisedFileName] = fatEntry;
+                fatFile.MixFileEntries[sanitisedFileName] = fatEntry;
             }
             else
             {
-                // note: there are entries listed in FAT files that point to unknown extra files
-                appendixEntries[sanitisedFileName] = fatEntry;
+                fatFile.XaFileEntries[sanitisedFileName] = fatEntry;
             }
         }
 
         private async Task ReadEntries(
-            FileStream fatFile,
-            int fileEntryCount,
-            Dictionary<string, FatFileEntry> entries,
-            Dictionary<string, FatFileEntry> appendixEntries
+            FileStream fatFileHandle,
+            FatFile fatFile
         )
         {
             var index = 1;
 
             while (true)
             {
-                var (readOk, fileEntryBytes) = await fatFile.ReadExactlyAsync(FAT_ENTRY_SIZE_IN_BYTES);
+                var (readOk, fileEntryBytes) = await fatFileHandle.ReadExactlyAsync(FatFileEntry.FAT_ENTRY_SIZE_IN_BYTES);
 
                 if (!readOk)
                 {
                     break;
                 }
 
-                ReadEntry(index, fileEntryBytes, fileEntryCount, entries, appendixEntries);
+                ReadEntry(index, fileEntryBytes, fatFile);
                 index++;
             }
         }
 
         public async Task<FatFile> Read(string filePath)
         {
-            int fileEntryCount, extraFileEntryCount = 0;
-            var entries = new Dictionary<string, FatFileEntry>();
-            var appendixEntries = new Dictionary<string, FatFileEntry>();
+            FatFile fatFile;
 
-            using (var fatFile = File.OpenRead(filePath))
+            using (var fatFileHandle = File.OpenRead(filePath))
             {
-                if (fatFile.Length < (FAT_HEADER_SIZE_IN_BYTES + FAT_ENTRY_SIZE_IN_BYTES))
+                if (fatFileHandle.Length < (FatFile.FAT_HEADER_SIZE_IN_BYTES + FatFileEntry.FAT_ENTRY_SIZE_IN_BYTES))
                 {
                     throw new InvalidDataException($"Path is not a FAT file or contains zero entries: {filePath}");
                 }
 
-                var (_, fileHeaderBytes) = await fatFile.ReadExactlyAsync(FAT_HEADER_SIZE_IN_BYTES);
-                fileEntryCount = DeserialiseInt32(fileHeaderBytes[..4]);
-                extraFileEntryCount = DeserialiseInt32(fileHeaderBytes[4..]);
+                var (_, headerBytes) = await fatFileHandle.ReadExactlyAsync(FatFile.FAT_HEADER_SIZE_IN_BYTES);
+                fatFile = FatFile.HeaderFromBytes(filePath, headerBytes);
 
-                await ReadEntries(fatFile, fileEntryCount, entries, appendixEntries);
+                fatFile.MixFileEntries = new Dictionary<string, FatFileEntry>();
+                fatFile.XaFileEntries = new Dictionary<string, FatFileEntry>();
+
+                await ReadEntries(fatFileHandle, fatFile);
             }
 
-            return new FatFile
-            {
-                Path = filePath,
-                EntryCount = fileEntryCount,
-                FileEntries = entries,
-                ExtraEntryCount = extraFileEntryCount,
-                ExtraFileEntries = appendixEntries
-            };
+            return fatFile;
         }
     }
 }

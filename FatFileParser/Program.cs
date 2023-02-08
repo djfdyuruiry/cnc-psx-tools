@@ -30,12 +30,15 @@ namespace FatFileParser
  
         private static async Task OutputFatFileAsTable(FatFile fatFile)
         {
-            await Console.Out.WriteLineAsync($"File Path:   {fatFile.Path}");
-            await Console.Out.WriteLineAsync($"Entry Count: {fatFile.EntryCount}\n");
+            await Console.Out.WriteLineAsync($"File Path:       {fatFile.Path}");
+            await Console.Out.WriteLineAsync($"MIX Entry Count: {fatFile.MixEntryCount}");
+            await Console.Out.WriteLineAsync($"XA Entry Count:  {fatFile.XaEntryCount}\n");
 
-            await OutputFatEntriesAsTable(fatFile.FileEntries);
+            await Console.Out.WriteLineAsync("******************* MIX Files ******************\n");
+            await OutputFatEntriesAsTable(fatFile.MixFileEntries);
 
-            // TODO: could have cli switch to show extra entries
+            await Console.Out.WriteLineAsync("\n******************* XA Files *******************\n");
+            await OutputFatEntriesAsTable(fatFile.XaFileEntries);
         }
 
         private static async Task<int> Run(CliOptions opts)
