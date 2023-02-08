@@ -19,8 +19,12 @@
         {
             _mixStream.Position = mixFileEntry.OffsetInBytes;
 
-            var fileByteBuffer = new byte[mixFileEntry.SizeInBytes];
-            await _mixStream.ReadAsync(fileByteBuffer, 0, fileByteBuffer.Length);
+            var (readOk, fileByteBuffer) = await _mixStream.ReadExactlyAsync(mixFileEntry.SizeInBytes);
+
+            if (!readOk)
+            {
+                throw new InvalidDataException("Corrupt MIX file or FAT/MIX mismatch: data for file entry missing");
+            }
 
             return fileByteBuffer;
         }

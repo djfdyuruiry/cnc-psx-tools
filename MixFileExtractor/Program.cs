@@ -1,15 +1,14 @@
-﻿
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 using CommandLine;
 
 using CncPsxLib;
+using System.IO.Compression;
 
 namespace MixFileExtractor
 {
     internal static class Program
     {
-
         private static async Task ExtractFile(
             MixFile mixFile,
             string fileName,
@@ -40,6 +39,25 @@ namespace MixFileExtractor
             filesToExtract.Any(r => r.IsMatch(fileName))
             && !filesToIgnore.Any(r => r.IsMatch(fileName));
 
+        private static async Task ExtractMixFileEntries(
+            MixFile mixFile,
+            IEnumerable<Regex> filesToExtract,
+            IEnumerable<Regex> filesToIgnore,
+            Dictionary<string, FatFileEntry> fileEntries,
+            string outputPath
+        )
+        {
+            foreach (var (fileName, entry) in fileEntries)
+            {
+                if (!ShouldExtractFile(filesToExtract, filesToIgnore, fileName))
+                {
+                    continue;
+                }
+
+                await ExtractFile(mixFile, fileName, entry, outputPath);
+            }
+        }
+
         private static async Task<int> Run(CliOptions opts)
         {
             var fatFileReader = new FatFileReader();
@@ -52,15 +70,11 @@ namespace MixFileExtractor
 
             using (var mixFile = MixFile.Open(opts.MixFilePath))
             {
-                foreach (var (fileName, entry) in fatFile.FileEntries)
-                {
-                    if (!ShouldExtractFile(filesToExtract, filesToIgnore, fileName))
-                    {
-                        continue;
-                    }
+                await ExtractMixFileEntries(
+                    mixFile, filesToExtract, filesToIgnore, fatFile.FileEntries, opts.OutputPathOrDefault
+                );
 
-                    await ExtractFile(mixFile, fileName, entry, opts.OutputPathOrDefault);
-                }
+                // note: extra entries don't have enough data at the given offset to be valid, hence not extracted
             }
 
             return 0;

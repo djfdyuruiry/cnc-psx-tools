@@ -8,18 +8,15 @@ namespace FatFileParser
 { 
     internal static class Program
     {
-        private static async Task OutputFatEntriesAsTable(FatFile fatFile)
+        private static async Task OutputFatEntriesAsTable(Dictionary<string, FatFileEntry> fileEntries)
         {   
-            await Console.Out.WriteLineAsync($"File Path:   {fatFile.Path}");
-            await Console.Out.WriteLineAsync($"Entry Count: {fatFile.EntryCount}\n");
-
             await Console.Out.WriteLineAsync(
                 @"┌──────────────┬────────────────┬──────────────┐
                   │ File Name    │ Offset         │ Size         │
                   ├──────────────┼────────────────┼──────────────┤".StripLeadingWhitespace()
             );
 
-            foreach (var (_, entry) in fatFile.FileEntries)
+            foreach (var (_, entry) in fileEntries)
             {
                 await Console.Out.WriteLineAsync(
                     $"│ {entry.FileName,-12} " +
@@ -29,6 +26,16 @@ namespace FatFileParser
             }
 
             await Console.Out.WriteLineAsync("└──────────────┴────────────────┴──────────────┘");
+        }
+ 
+        private static async Task OutputFatFileAsTable(FatFile fatFile)
+        {
+            await Console.Out.WriteLineAsync($"File Path:   {fatFile.Path}");
+            await Console.Out.WriteLineAsync($"Entry Count: {fatFile.EntryCount}\n");
+
+            await OutputFatEntriesAsTable(fatFile.FileEntries);
+
+            // TODO: could have cli switch to show extra entries
         }
 
         private static async Task<int> Run(CliOptions opts)
@@ -50,7 +57,7 @@ namespace FatFileParser
                 }
                 else
                 {
-                    await OutputFatEntriesAsTable(fatFile);
+                    await OutputFatFileAsTable(fatFile);
                 }
             }
             catch (Exception e)
@@ -69,5 +76,4 @@ namespace FatFileParser
                     Run,
                     errs => Task.FromResult(-1)
                 );
-    };
-}
+    }}
