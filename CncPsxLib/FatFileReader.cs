@@ -50,6 +50,7 @@ namespace CncPsxLib
             }
             else
             {
+                // note: there are entries listed in FAT files that point to unknown extra files
                 appendixEntries[sanitisedFileName] = fatEntry;
             }
         }
