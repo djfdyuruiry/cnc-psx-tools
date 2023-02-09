@@ -6,8 +6,15 @@ namespace MixFileExtractor
 {
     internal class CliOptions
     {
-        [Option('p', "path", Required = true, HelpText = "Path to a MIX file from a PS1 C&C game.")]
+        [Option(
+            'p',
+            "path",
+            Required = true,
+            HelpText = "Path to a MIX file from a PS1 C&C game; note '.XA' files are also valid MIX files."
+        )]
         public string MixFilePath { get; set; }
+
+        public bool MixFileIsXaData => Path.GetExtension(MixFilePath).ToUpper() == ".XA";
 
         public string MixFileName => Path.GetFileNameWithoutExtension(MixFilePath);
 

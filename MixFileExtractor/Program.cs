@@ -65,16 +65,20 @@ namespace MixFileExtractor
 
             Directory.CreateDirectory(opts.OutputPathOrDefault);
 
+            var entries = fatFile.MixFileEntries;
             var filesToExtract = opts.BuildExtractPatterns();
             var filesToIgnore = opts.BuildIgnorePatterns();
+
+            if (opts.MixFileIsXaData)
+            {
+                entries = fatFile.XaFileEntries;
+            }
 
             using (var mixFile = MixFile.Open(opts.MixFilePath))
             {
                 await ExtractMixFileEntries(
-                    mixFile, filesToExtract, filesToIgnore, fatFile.MixFileEntries, opts.OutputPathOrDefault
+                    mixFile, filesToExtract, filesToIgnore, entries, opts.OutputPathOrDefault
                 );
-
-                // note: extra entries don't have enough data at the given offset to be valid, hence not extracted
             }
 
             return 0;

@@ -11,7 +11,9 @@ namespace CncPsxLib
         {
             if (bytes.Length < FAT_ENTRY_SIZE_IN_BYTES)
             {
-                throw new InvalidDataException($"Unable to parse FAT file entry, expected {FAT_ENTRY_SIZE_IN_BYTES} bytes, got {bytes.Length}");
+                throw new InvalidDataException(
+                    $"Insufficent data to parse FAT file entry. Expected {FAT_ENTRY_SIZE_IN_BYTES} bytes, got {bytes.Length}"
+                );
             }
 
             return new FatFileEntry

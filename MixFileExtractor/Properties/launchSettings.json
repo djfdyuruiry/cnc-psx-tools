@@ -3,6 +3,10 @@
     "Debug": {
       "commandName": "Project",
       "commandLineArgs": "-p ../../../../reference-files/tiberian-dawn/nod/DATA.MIX"
+    },
+    "Debug (XA Data)": {
+      "commandName": "Project",
+      "commandLineArgs": "-p ../../../../reference-files/tiberian-dawn/nod/DATA.XA"
     }
   }
 }
