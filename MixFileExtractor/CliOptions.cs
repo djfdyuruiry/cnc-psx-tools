@@ -10,7 +10,7 @@ namespace MixFileExtractor
             'p',
             "path",
             Required = true,
-            HelpText = "Path to a MIX file from a PS1 C&C game; note '.XA' files are also valid MIX files."
+            HelpText = "Path to a MIX/XA file from a PS1 C&C game; XA files are MIX files but contain audio/video data."
         )]
         public string MixFilePath { get; set; }
 
@@ -21,7 +21,7 @@ namespace MixFileExtractor
         [Option(
             'f',
             "fat-path",
-            HelpText = "Path to a FAT file that matches the MIX file provided in --path. Defaults " +
+            HelpText = "Path to a FAT file that matches the MIX/XA file provided in --path. Defaults " +
             "to MIX file name, e.g. '--path DATA.MIX' will default to 'DATA.FAT'."
         )]
         public string? FatFilePath { get; set; }
@@ -37,7 +37,7 @@ namespace MixFileExtractor
             "extract-files",
             Default = new string[] { "*" },
             Separator = ',',
-            HelpText = "CSV list of filenames to extract from MIX file, supports wildcards. " +
+            HelpText = "CSV list of filenames to extract from MIX/XA file, supports wildcards. " +
             "Defaults to '*', which extracts all files."
         )]
         public IEnumerable<string> FilesToExtract { get; set; }
@@ -54,8 +54,8 @@ namespace MixFileExtractor
         [Option(
             'o',
             "output-path",
-            HelpText = "Directory to write extract files to. Defaults to MIX file name, " +
-            "e.g. '--path DATA.MIX' will default to writing in the directory 'DATA'."
+            HelpText = "Directory to write extract files to. Defaults to MIX/XA file name, " +
+            "e.g. '--path DATA.XA' will default to writing in the directory 'DATA'."
         )]
         public string? OutputPath { get; set; }
 
