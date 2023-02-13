@@ -61,9 +61,9 @@ namespace FatFileParser
                 else
                 {
                     await OutputFatFileAsTable(fatFile);
-                    var writer = new FatFileWriter();
 
-                    await writer.Write(fatFile, "MATT.FAT");
+                    //var writer = new FatFileWriter();
+                    //await writer.Write(fatFile, "DATA.FAT");
                 }
             }
             catch (Exception e)

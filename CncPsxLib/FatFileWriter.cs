@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace CncPsxLib
+﻿namespace CncPsxLib
 {
     public class FatFileWriter
     {
