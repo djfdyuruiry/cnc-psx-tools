@@ -19,7 +19,7 @@
         {
             _mixStream.Position = mixFileEntry.OffsetInBytes;
 
-            var (readOk, fileByteBuffer) = await _mixStream.ReadExactlyAsync(mixFileEntry.SizeInBytes);
+            var (readOk, fileByteBuffer) = await _mixStream.ReadExactlyAsync((int)mixFileEntry.SizeInBytes);
 
             if (!readOk)
             {

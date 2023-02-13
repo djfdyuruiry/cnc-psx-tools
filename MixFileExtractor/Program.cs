@@ -2,8 +2,7 @@
 
 using CommandLine;
 
-using CncPsxLib;
-using System.IO.Compression;
+using CncPsxLib;  
 
 namespace MixFileExtractor
 {

@@ -1,10 +1,10 @@
 ﻿namespace CncPsxLib
 {
-    public static class IntExtensions
+    public static class UIntExtensions
     {
         private static readonly string[] BYTE_UNITS = { "B", "KB", "MB", "GB" };
 
-        public static string FormatAsByteUnit(this Int32 bytes)
+        public static string FormatAsByteUnit(this UInt32 bytes)
         {
             int i;
             double unitSize = bytes;

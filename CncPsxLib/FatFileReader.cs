@@ -8,8 +8,10 @@
             FatFile fatFile
         )
         {
-            var fatEntry = FatFileEntry.FromBytes(index, fileEntryBytes); 
+            var fatEntry = FatFileEntry.FromBytes(fileEntryBytes);
             var sanitisedFileName = fatEntry.FileName;
+
+            fatEntry.Index = fatEntry.IsInMixFile ? index : index - fatFile.MixEntryCount;
 
             if (fatFile.MixFileEntries.ContainsKey(sanitisedFileName))
             {
@@ -17,7 +19,7 @@
                 sanitisedFileName = sanitisedFileName.Replace(".", "-1.");
             }
 
-            if (index <= fatFile.MixEntryCount)
+            if (fatEntry.IsInMixFile)
             {
                 fatFile.MixFileEntries[sanitisedFileName] = fatEntry;
             }
@@ -36,7 +38,7 @@
 
             while (true)
             {
-                var (readOk, fileEntryBytes) = await fatFileHandle.ReadExactlyAsync(FatFileEntry.FAT_ENTRY_SIZE_IN_BYTES);
+                var (readOk, fileEntryBytes) = await fatFileHandle.ReadExactlyAsync(FatFileEntry.ENTRY_SIZE_IN_BYTES);
 
                 if (!readOk)
                 {
@@ -54,7 +56,7 @@
 
             using (var fatFileHandle = File.OpenRead(filePath))
             {
-                if (fatFileHandle.Length < (FatFile.FAT_HEADER_SIZE_IN_BYTES + FatFileEntry.FAT_ENTRY_SIZE_IN_BYTES))
+                if (fatFileHandle.Length < (FatFile.FAT_HEADER_SIZE_IN_BYTES + FatFileEntry.ENTRY_SIZE_IN_BYTES))
                 {
                     throw new InvalidDataException($"Path is not a FAT file or contains zero entries: {filePath}");
                 }
