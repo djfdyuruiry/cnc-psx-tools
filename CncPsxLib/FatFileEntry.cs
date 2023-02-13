@@ -17,7 +17,7 @@ namespace CncPsxLib
                 );
             }
 
-            /* This 'short' will always be zero for MIX file entries - copied from C&C PS1 source code:
+            /* This 'short' will always be zero for MIX file entries - derived from C&C PS1 source code:
              *
              *    unsigned long* FAT_FILE_DATA; // 4 bytes wide
              *    f = &XA_FILE;
@@ -35,19 +35,20 @@ namespace CncPsxLib
                 OffsetInCdSectors = (BitConverter.ToUInt32(bytes[16..20])),
                 CdSectorSizeInBytes = chunkSize,
                 SizeInBytes = BitConverter.ToUInt32(bytes[20..24]),
-                LeadOutBytes = bytes[24..],
+                LeadOutBytes = bytes[26..],
                 IsInMixFile = isInMixFile
             };
         }
 
         public int Index { get; set; }
 
-        public string FileName { get; set;  }
+        public string FileName { get; set; }
 
         public string FileExtension => Path.GetExtension(FileName).Remove(0, 1);
 
         public string HexFileName => $"{Index.ToString("X").PadLeft(8, '0')}.{FileExtension}";
 
+        // unknown what this value means when non-zero
         public byte[] LeadInBytes { get; set; }
 
         public uint OffsetInCdSectors { get; set; }
@@ -62,6 +63,7 @@ namespace CncPsxLib
 
         public string SizeInByteUnits => SizeInBytes.FormatAsByteUnit();
 
+        // unknown what this value means when non-zero
         public byte[] LeadOutBytes { get; set; }
 
         public bool IsInMixFile { get; set; }
@@ -73,6 +75,7 @@ namespace CncPsxLib
                 .Concat(LeadInBytes)
                 .Concat(BitConverter.GetBytes(OffsetInCdSectors))
                 .Concat(BitConverter.GetBytes(SizeInBytes))
+                .Concat(new byte[] { (byte)(IsInMixFile ? 0 : 1), 0 }) // see FromBytes comments
                 .Concat(LeadOutBytes)
                 .ToArray();
     }
