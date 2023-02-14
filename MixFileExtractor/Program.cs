@@ -42,18 +42,29 @@ namespace MixFileExtractor
             MixFile mixFile,
             IEnumerable<Regex> filesToExtract,
             IEnumerable<Regex> filesToIgnore,
-            Dictionary<string, FatFileEntry> fileEntries,
+            List<FatFileEntry> fileEntries,
             string outputPath
         )
         {
-            foreach (var (fileName, entry) in fileEntries)
+            var fileNamesExtracted = new Dictionary<string, bool>();
+
+            foreach (var entry in fileEntries)
             {
-                if (!ShouldExtractFile(filesToExtract, filesToIgnore, fileName))
+                var sanitisedFileName = entry.FileName;
+
+                if (fileNamesExtracted.ContainsKey(sanitisedFileName))
+                {
+                    // detect duplicate filename entries
+                    sanitisedFileName = sanitisedFileName.Replace(".", "-1.");
+                }
+
+                if (!ShouldExtractFile(filesToExtract, filesToIgnore, sanitisedFileName))
                 {
                     continue;
                 }
 
-                await ExtractFile(mixFile, fileName, entry, outputPath);
+                await ExtractFile(mixFile, sanitisedFileName, entry, outputPath);
+                fileNamesExtracted[sanitisedFileName] = true;
             }
         }
 

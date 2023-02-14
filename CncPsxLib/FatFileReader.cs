@@ -9,23 +9,16 @@
         )
         {
             var fatEntry = FatFileEntry.FromBytes(fileEntryBytes);
-            var sanitisedFileName = fatEntry.FileName;
 
             fatEntry.Index = fatEntry.IsInMixFile ? index : index - fatFile.MixEntryCount;
 
-            if (fatFile.MixFileEntries.ContainsKey(sanitisedFileName))
-            {
-                // detect duplicate filename entries
-                sanitisedFileName = sanitisedFileName.Replace(".", "-1.");
-            }
-
             if (fatEntry.IsInMixFile)
             {
-                fatFile.MixFileEntries[sanitisedFileName] = fatEntry;
+                fatFile.MixFileEntries.Add(fatEntry);
             }
             else
             {
-                fatFile.XaFileEntries[sanitisedFileName] = fatEntry;
+                fatFile.XaFileEntries.Add(fatEntry);
             }
         }
 
@@ -64,8 +57,8 @@
                 var (_, headerBytes) = await fatFileHandle.ReadExactlyAsync(FatFile.FAT_HEADER_SIZE_IN_BYTES);
                 fatFile = FatFile.HeaderFromBytes(filePath, headerBytes);
 
-                fatFile.MixFileEntries = new Dictionary<string, FatFileEntry>();
-                fatFile.XaFileEntries = new Dictionary<string, FatFileEntry>();
+                fatFile.MixFileEntries = new List<FatFileEntry>();
+                fatFile.XaFileEntries = new List<FatFileEntry>();
 
                 await ReadEntries(fatFileHandle, fatFile);
             }

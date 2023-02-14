@@ -4,10 +4,10 @@
     {
         private async Task WriteEntries(
             FileStream fatFile,
-            Dictionary<string, FatFileEntry> entries
+            List<FatFileEntry> entries
         )
         {
-            foreach (var (_, entry) in entries)
+            foreach (var entry in entries)
             {
                 await fatFile.WriteAsync(entry.ToBytes());
             }

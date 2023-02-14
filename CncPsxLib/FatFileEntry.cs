@@ -61,6 +61,23 @@ namespace CncPsxLib
 
         public uint SizeInBytes { get; set; }
 
+        public uint PostDataSectorPaddingSize 
+        {
+            get
+            {
+                if (SizeInBytes < CdSectorSizeInBytes)
+                {
+                    return CdSectorSizeInBytes - SizeInBytes;
+                }
+
+                return SizeInBytes % CdSectorSizeInBytes;
+            }
+        }
+
+        public bool RequiresSectorPadding => PostDataSectorPaddingSize != 0;
+
+        public uint SizeInSectors => SizeInBytes / CdSectorSizeInBytes + (RequiresSectorPadding ? 1u : 0u);
+
         public string SizeInByteUnits => SizeInBytes.FormatAsByteUnit();
 
         // unknown what this value means when non-zero

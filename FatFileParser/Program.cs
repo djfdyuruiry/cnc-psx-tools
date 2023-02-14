@@ -8,7 +8,7 @@ namespace FatFileParser
 { 
     internal static class Program
     {
-        private static async Task OutputFatEntriesAsTable(Dictionary<string, FatFileEntry> fileEntries)
+        private static async Task OutputFatEntriesAsTable(List<FatFileEntry> fileEntries)
         {   
             await Console.Out.WriteLineAsync(
                 @"┌──────────────┬────────────────┬──────────────┐
@@ -16,7 +16,7 @@ namespace FatFileParser
                   ├──────────────┼────────────────┼──────────────┤".StripLeadingWhitespace()
             );
 
-            foreach (var (_, entry) in fileEntries)
+            foreach (var entry in fileEntries)
             {
                 await Console.Out.WriteLineAsync(
                     $"│ {entry.FileName,-12} " +
