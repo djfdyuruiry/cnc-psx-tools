@@ -9,7 +9,7 @@ namespace MixFileExtractor
     internal static class Program
     {
         private static async Task ExtractFile(
-            MixFile mixFile,
+            MixFileReader mixFile,
             string fileName,
             FatFileEntry entry,
             string outputPath
@@ -39,14 +39,14 @@ namespace MixFileExtractor
             && !filesToIgnore.Any(r => r.IsMatch(fileName));
 
         private static async Task ExtractMixFileEntries(
-            MixFile mixFile,
+            MixFileReader mixFile,
             IEnumerable<Regex> filesToExtract,
             IEnumerable<Regex> filesToIgnore,
             List<FatFileEntry> fileEntries,
             string outputPath
         )
         {
-            var fileNamesExtracted = new Dictionary<string, bool>();
+            var fileNamesExtracted = new Dictionary<string, int>();
 
             foreach (var entry in fileEntries)
             {
@@ -54,8 +54,11 @@ namespace MixFileExtractor
 
                 if (fileNamesExtracted.ContainsKey(sanitisedFileName))
                 {
-                    // detect duplicate filename entries
-                    sanitisedFileName = sanitisedFileName.Replace(".", "-1.");
+                    // allow duplicate filename entries
+                    sanitisedFileName = sanitisedFileName.Replace(
+                        ".",
+                        $"-{fileNamesExtracted[sanitisedFileName]}."
+                    );
                 }
 
                 if (!ShouldExtractFile(filesToExtract, filesToIgnore, sanitisedFileName))
@@ -64,7 +67,11 @@ namespace MixFileExtractor
                 }
 
                 await ExtractFile(mixFile, sanitisedFileName, entry, outputPath);
-                fileNamesExtracted[sanitisedFileName] = true;
+
+                fileNamesExtracted[sanitisedFileName] =
+                    fileNamesExtracted.ContainsKey(sanitisedFileName) ?
+                    fileNamesExtracted[sanitisedFileName]++ :
+                    1;
             }
         }
 
@@ -84,12 +91,34 @@ namespace MixFileExtractor
                 entries = fatFile.XaFileEntries;
             }
 
-            using (var mixFile = MixFile.Open(opts.MixFilePath))
+            using (var mixFile = MixFileReader.Open(opts.MixFilePath))
             {
                 await ExtractMixFileEntries(
                     mixFile, filesToExtract, filesToIgnore, entries, opts.OutputPathOrDefault
                 );
             }
+
+            //using (var mixFile = MixFileWriter.Open("DATA.MIX"))
+            //{
+            //    foreach (var entry in entries)
+            //    {
+            //        var fileName = entry.FileName;
+            //        var sanitizedFileName = fileName.Replace(
+            //            ".",
+            //            $"-1."
+            //        );
+
+            //        if (!File.Exists(fileName) && File.Exists(sanitizedFileName))
+            //        {
+            //            fileName = sanitizedFileName;
+            //        }
+
+            //        using (var entryData = File.OpenRead($"DATA/{fileName}"))
+            //        {
+            //            await mixFile.WriteFile(entry, entryData);
+            //        }
+            //    }    
+            //}
 
             return 0;
         }

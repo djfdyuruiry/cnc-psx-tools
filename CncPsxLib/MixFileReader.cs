@@ -1,14 +1,14 @@
 ﻿namespace CncPsxLib
 {
-    public class MixFile : IDisposable
+    public class MixFileReader : IDisposable
     {
         private readonly FileStream _mixStream;
 
         public string Path { get; }
 
-        public static MixFile Open(string path) => new(path);
+        public static MixFileReader Open(string path) => new(path);
 
-        private MixFile(string path)
+        private MixFileReader(string path)
         {
             Path = path;
 
