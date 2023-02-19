@@ -1,6 +1,10 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.IO;
+using System.Linq;
 using System.Reactive;
+using System.Text;
 using System.Threading.Tasks;
 
 using Avalonia.Controls;
@@ -9,15 +13,12 @@ using ReactiveUI;
 using YamlDotNet.Serialization;
 
 using CncPsxLib;
-using System.IO;
-using System.Collections.Generic;
-using System.Text;
 
 using static CncPsxLib.FileConstants;
 
 namespace MixFileManager.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase, ITreeViewEventHandler
+    public class MainWindowViewModel : ViewModelBase
     {
         private const string DEFAULT_WINDOW_TITLE = "Mix File Manager";
 
@@ -175,14 +176,16 @@ namespace MixFileManager.ViewModels
             WindowTitle = $"{DEFAULT_WINDOW_TITLE} - {filePath}";
         }
 
-        public async Task OnSelectedItemChangeAsync(string _, object? item)
+        public async Task SelectFile(object? _, SelectionChangedEventArgs e)
         {
-            if(item is null || item is not FatFileEntry)
+            if (e.AddedItems.Count < 1
+               || e.AddedItems[0] is null
+               || e.AddedItems[0] is not FatFileEntry)
             {
                 return;
             }
 
-            CurrentEntry = item as FatFileEntry;
+            CurrentEntry = e.AddedItems[0] as FatFileEntry;
             CurrentEntryYaml = _yamlSerialiser.Serialize(CurrentEntry!);
             CurrentEntryText = "<Entry is not a text file>";
 
@@ -195,7 +198,9 @@ namespace MixFileManager.ViewModels
 
                 using (var reader = MixFileReader.Open(_mixFilePath))
                 {
-                    CurrentEntryText = Encoding.ASCII.GetString(await reader.ReadFile(CurrentEntry));
+                    CurrentEntryText = Encoding.ASCII.GetString(
+                        await reader.ReadFile(CurrentEntry)
+                    );
                 }
             }
         }

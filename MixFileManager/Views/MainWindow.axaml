@@ -3,7 +3,10 @@
         xmlns:vm="using:MixFileManager.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
+        xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
+        xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+        xmlns:ic="using:Avalonia.Xaml.Interactions.Custom"
+		mc:Ignorable="d"
 		d:DesignWidth="1024"
 		d:DesignHeight="768"
         x:Class="MixFileManager.Views.MainWindow"
@@ -20,6 +23,11 @@
 					  Items="{Binding FileEntries}"
 					  Grid.Row="0"
 					  Grid.Column="0">
+				<i:Interaction.Behaviors>
+					<ia:EventTriggerBehavior EventName="SelectionChanged" SourceObject="FileTree">
+						<ia:CallMethodAction TargetObject="{Binding}" MethodName="SelectFile"/>
+					</ia:EventTriggerBehavior>
+				</i:Interaction.Behaviors>
 				<TreeView.ItemTemplate>
 					<TreeDataTemplate>
 						<TextBlock Text="{Binding FileName}"/>
