@@ -2,7 +2,7 @@
 {
     public class MixFileWriter : IDisposable
     {
-        private readonly FileStream _mixStream;
+        public FileStream MixStream { get; }
 
         public string Path { get; }
 
@@ -12,22 +12,38 @@
         {
             Path = path;
 
-            _mixStream = File.OpenWrite(Path);
+            MixStream = File.OpenWrite(Path);
+        }
+
+        private async Task WriteEndSectorPaddingIfRequired(uint sectorSizeInBytes)
+        {
+            var dataBytesInEndSector = MixStream.Position % sectorSizeInBytes;
+
+            if (dataBytesInEndSector == 0)
+            {
+                return;
+            }
+
+            var bytesRequiredToFillEndSector = sectorSizeInBytes - dataBytesInEndSector;
+            var paddingBytes = Enumerable.Repeat<byte>(0, (int)bytesRequiredToFillEndSector).ToArray();
+
+            await MixStream.WriteAsync(paddingBytes);
         }
 
         public async Task WriteFile(FatFileEntry mixFileEntry, Stream entryDataStream)
         {
-            if (_mixStream.Position < mixFileEntry.OffsetInBytes)
-            {
-                var paddingLength = mixFileEntry.OffsetInBytes - _mixStream.Position;
-                var paddingBytes = Enumerable.Repeat<byte>(0, (int)paddingLength).ToArray();
+            await entryDataStream.CopyToAsync(MixStream);
 
-                await _mixStream.WriteAsync(paddingBytes);
-            }
+            await WriteEndSectorPaddingIfRequired(mixFileEntry.CdSectorSizeInBytes);
+        }
+        
+        public async Task WriteFile(FatFileEntry mixFileEntry, byte[] entryData)
+        {
+            await MixStream.WriteAsync(entryData);
 
-            await entryDataStream.CopyToAsync(_mixStream);
+            await WriteEndSectorPaddingIfRequired(mixFileEntry.CdSectorSizeInBytes);
         }
 
-        public void Dispose() => _mixStream.Dispose();
+        public void Dispose() => MixStream.Dispose();
     }
 }

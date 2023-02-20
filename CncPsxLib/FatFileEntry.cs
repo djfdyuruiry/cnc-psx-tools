@@ -55,28 +55,25 @@ namespace CncPsxLib
 
         public uint CdSectorSizeInBytes { get; set; }
 
-        public uint OffsetInBytes => OffsetInCdSectors * CdSectorSizeInBytes;
+        public uint OffsetInBytes
+        {
+            get => OffsetInCdSectors * CdSectorSizeInBytes;
+            set
+            {
+                if (value % CdSectorSizeInBytes != 0)
+                {
+                    throw new InvalidDataException($"File offset '{value}' was not divisible by sector size '{CdSectorSizeInBytes}'");
+                }
+
+                OffsetInCdSectors = value / CdSectorSizeInBytes;
+            }
+        }
 
         public string HexOffsetInBytes => OffsetInBytes.ToString("X").PadLeft(8, '0');
 
         public uint SizeInBytes { get; set; }
 
-        public uint PostDataSectorPaddingSize 
-        {
-            get
-            {
-                if (SizeInBytes < CdSectorSizeInBytes)
-                {
-                    return CdSectorSizeInBytes - SizeInBytes;
-                }
-
-                return SizeInBytes % CdSectorSizeInBytes;
-            }
-        }
-
-        public bool RequiresSectorPadding => PostDataSectorPaddingSize != 0;
-
-        public uint SizeInSectors => SizeInBytes / CdSectorSizeInBytes + (RequiresSectorPadding ? 1u : 0u);
+        public uint SizeInSectors => SizeInBytes / CdSectorSizeInBytes;
 
         public string SizeInByteUnits => SizeInBytes.FormatAsByteUnit();
 

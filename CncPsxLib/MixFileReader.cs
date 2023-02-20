@@ -2,7 +2,7 @@
 {
     public class MixFileReader : IDisposable
     {
-        private readonly FileStream _mixStream;
+        public FileStream MixStream;
 
         public string Path { get; }
 
@@ -12,14 +12,14 @@
         {
             Path = path;
 
-            _mixStream = File.OpenRead(Path);
+            MixStream = File.OpenRead(Path);
         }
 
         public async Task<byte[]> ReadFile(FatFileEntry mixFileEntry)
         {
-            _mixStream.Position = mixFileEntry.OffsetInBytes;
+            MixStream.Position = mixFileEntry.OffsetInBytes;
 
-            var (readOk, fileByteBuffer) = await _mixStream.ReadExactlyAsync((int)mixFileEntry.SizeInBytes);
+            var (readOk, fileByteBuffer) = await MixStream.ReadExactlyAsync((int)mixFileEntry.SizeInBytes);
 
             if (!readOk)
             {
@@ -29,6 +29,6 @@
             return fileByteBuffer;
         }
 
-        public void Dispose() => _mixStream.Dispose();
+        public void Dispose() => MixStream.Dispose();
     }
 }
