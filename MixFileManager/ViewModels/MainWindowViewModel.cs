@@ -54,6 +54,7 @@ namespace MixFileManager.ViewModels
         private string _windowTitle;
         private FatFile? _fatFile;
         private string? _mixFilePath;
+        private bool _isXaMixFile;
         private FatFileEntry? _currentEntry;
         private bool _shouldShowDetails;
         private bool _shouldShowText;
@@ -107,6 +108,8 @@ namespace MixFileManager.ViewModels
 
         public ReactiveCommand<Window, Unit> ExtractFile { get; }
 
+        public ReactiveCommand<Window, Unit> ReplaceFile { get; }
+        
         public MainWindowViewModel()
         {
             _windowTitle = DEFAULT_WINDOW_TITLE;
@@ -125,6 +128,7 @@ namespace MixFileManager.ViewModels
             ShowDetails = ReactiveCommand.Create(() => { ShouldShowDetails = true; ShouldShowText = false; });
             ShowText = ReactiveCommand.Create(() => { ShouldShowDetails = false; ShouldShowText = true; });
             ExtractFile = ReactiveCommand.CreateFromTask<Window>(DoExtractFile);
+            ReplaceFile = ReactiveCommand.CreateFromTask<Window>(DoReplaceFile);
         }
 
         public MainWindowViewModel(FatFileReader fatFileReader, ISerializer yamlSerializer) : this()
@@ -133,59 +137,9 @@ namespace MixFileManager.ViewModels
             _yamlSerialiser = yamlSerializer;
         }
 
-        public async Task DoLoadFile(Window activeWindow, bool loadingMixFile = false)
+        private async Task SetCurrentEntry(FatFileEntry entry)
         {
-            _fileOpenDialog.Filters!.Clear();
-
-            _fileOpenDialog.Filters!.Add(FAT_FILTER);
-            _fileOpenDialog.Filters!.Add(loadingMixFile ? MIX_FILTER : XA_FILTER);
-
-            var filePathResult = await _fileOpenDialog.ShowAsync(activeWindow);
-
-            if (filePathResult is null || filePathResult.Length < 1)
-            {
-                return;
-            }
-
-            var filePath = filePathResult.First();
-            var fatFilePath = Path.GetExtension(filePath).ToUpper() == $".{FAT_EXTENSION}" 
-                ? filePath 
-                : Path.ChangeExtension(filePath, FAT_EXTENSION);
-
-            if (!File.Exists(fatFilePath))
-            {
-                // TODO: raise error
-                return;
-            }
-
-            _fatFile = await _fatFileReader.Read(fatFilePath);
-            _mixFilePath = Path.ChangeExtension(
-                fatFilePath, 
-                loadingMixFile ? MIX_EXTENSION : XA_EXTENSION
-            );
-
-            if (!File.Exists(_mixFilePath))
-            {
-                // TODO: raise error
-                return;
-            }
-
-            FileEntries.Clear();
-            FileEntries.AddRange(loadingMixFile ? _fatFile.MixFileEntries : _fatFile.XaFileEntries);
-
-            WindowTitle = $"{DEFAULT_WINDOW_TITLE} - {filePath}";
-        }
-
-        public async Task SelectFile(object? _, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count < 1
-               || e.AddedItems[0] is null
-               || e.AddedItems[0] is not FatFileEntry)
-            {
-                return;
-            }
-
-            CurrentEntry = e.AddedItems[0] as FatFileEntry;
+            CurrentEntry = entry;
             CurrentEntryYaml = _yamlSerialiser.Serialize(CurrentEntry!);
             CurrentEntryText = "<Entry is not a text file>";
 
@@ -203,6 +157,69 @@ namespace MixFileManager.ViewModels
                     );
                 }
             }
+        }
+
+        public async Task SelectFile(object? _, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count < 1
+               || e.AddedItems[0] is null
+               || e.AddedItems[0] is not FatFileEntry)
+            {
+                return;
+            }
+
+            var currentEntry = e.AddedItems[0] as FatFileEntry;
+
+            await SetCurrentEntry(currentEntry!);
+        }
+
+        private async Task LoadFile(string filePath)
+        {
+            var fatFilePath = Path.GetExtension(filePath).ToUpper() == $".{FAT_EXTENSION}"
+                ? filePath
+                : Path.ChangeExtension(filePath, FAT_EXTENSION);
+
+            if (!File.Exists(fatFilePath))
+            {
+                // TODO: raise error
+                return;
+            }
+
+            _fatFile = await _fatFileReader.Read(fatFilePath);
+            _mixFilePath = Path.ChangeExtension(
+                fatFilePath,
+                _isXaMixFile ? XA_EXTENSION : MIX_EXTENSION
+            );
+
+            if (!File.Exists(_mixFilePath))
+            {
+                // TODO: raise error
+                return;
+            }
+
+            FileEntries.Clear();
+            FileEntries.AddRange(_isXaMixFile ? _fatFile.XaFileEntries : _fatFile.MixFileEntries);
+
+            WindowTitle = $"{DEFAULT_WINDOW_TITLE} - {filePath}";
+        }
+
+        public async Task DoLoadFile(Window activeWindow, bool loadingMixFile = false)
+        {
+            _fileOpenDialog.Filters!.Clear();
+
+            _fileOpenDialog.Filters!.Add(FAT_FILTER);
+            _fileOpenDialog.Filters!.Add(loadingMixFile ? MIX_FILTER : XA_FILTER);
+
+            var filePathResult = await _fileOpenDialog.ShowAsync(activeWindow);
+
+            if (filePathResult is null || filePathResult.Length < 1)
+            {
+                return;
+            }
+
+            _isXaMixFile = !loadingMixFile;
+
+            await LoadFile(filePathResult.First());
         }
 
         public async Task DoExtractFile(Window activeWindow)
@@ -238,6 +255,39 @@ namespace MixFileManager.ViewModels
                     writer.Write(await reader.ReadFile(CurrentEntry));
                 }
             }
+        }
+
+        public async Task DoReplaceFile(Window activeWindow)
+        {
+            if(_fatFile is null || _mixFilePath is null || CurrentEntry is null)
+            {
+                return;
+            }
+
+            var mixFileManager = new MixFileEditor(_fatFile, _mixFilePath);
+
+            _fileOpenDialog.Filters?.Clear();
+            _fileOpenDialog.Filters = new List<FileDialogFilter> {
+                new FileDialogFilter
+                {
+                    Extensions = new List<string> { CurrentEntry.FileExtension }
+                }
+            };
+
+            var filePathResult = await _fileOpenDialog.ShowAsync(activeWindow);
+
+            if (filePathResult is null || filePathResult.Length < 1)
+            {
+                return;
+            }
+
+            using (var readStream = File.OpenRead(filePathResult.First()))
+            {
+                await mixFileManager.ReplaceFile(CurrentEntry, readStream);
+            };
+
+            await LoadFile(_fatFile.Path);
+            await SetCurrentEntry(FileEntries.First(e => e.Index == CurrentEntry.Index));
         }
     }
 }

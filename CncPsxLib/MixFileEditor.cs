@@ -2,7 +2,7 @@
 
 namespace CncPsxLib
 {
-    public class MixFileManager
+    public class MixFileEditor
     {
         public FatFile FileTable { get; }
 
@@ -12,7 +12,7 @@ namespace CncPsxLib
 
         public List<FatFileEntry> FileEntries => IsXaMixFile ? FileTable.XaFileEntries : FileTable.MixFileEntries;
 
-        public MixFileManager(FatFile fileTable, string mixFilePath)
+        public MixFileEditor(FatFile fileTable, string mixFilePath)
         {
             FileTable = fileTable;
             MixFilePath = mixFilePath;

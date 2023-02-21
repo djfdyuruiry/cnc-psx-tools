@@ -52,7 +52,9 @@
 					<Button Command="{Binding ExtractFile}"
 							CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
 							Content="Extract"/>
-					<Button IsEnabled="False" Content="Replace"/>
+					<Button Command="{Binding ReplaceFile}"
+							CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+							Content="Replace"/>
 					<Button IsEnabled="False" Content="Delete"/>
 				</StackPanel>
 			</Border>
