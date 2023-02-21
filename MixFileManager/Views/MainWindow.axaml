@@ -43,25 +43,36 @@
 						Content="Load XA File"/>
 			</StackPanel>
 		</Grid>
-		<Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*" RowDefinitions="0.75*,2*,1*,15*" Margin="5">
+		<Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*" RowDefinitions="0.75*,2*,1*,15*,1.25*" Margin="5">
 			<TextBlock Grid.Row="0" Grid.Column="0" FontSize="14" Text="Manage Entry"/>
 			<Border Grid.Row="1" Grid.Column="0">
 				<StackPanel Orientation="Horizontal" Spacing="5">
-					<Button Command="{Binding ShowDetails}" Content="View Details"/>
-					<Button Command="{Binding ShowText}" Content="View Text"/>
-					<Button Command="{Binding ExtractFile}"
+					<Button IsEnabled="{Binding EntryIsSelected}"
+							Command="{Binding ViewDetails}" Content="View Details"/>
+					<Button IsEnabled="{Binding CurrentEntryIsTextFile}"
+							Command="{Binding ViewText}"
+							Content="View Text"/>
+					<Button IsEnabled="{Binding CurrentEntryIsTextFile}"
+							Command="{Binding EditText}"
+							Content="Edit Text"/>
+					<Button IsEnabled="{Binding EntryIsSelected}"
+							Command="{Binding ExtractFile}"
 							CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
 							Content="Extract"/>
-					<Button Command="{Binding ReplaceFile}"
+					<Button IsEnabled="{Binding EntryIsSelected}"
+							Command="{Binding ReplaceFile}"
 							CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
 							Content="Replace"/>
 					<Button IsEnabled="False" Content="Delete"/>
 				</StackPanel>
 			</Border>
-			<TextBlock Grid.Row="2" Grid.Column="0" IsVisible="{Binding ShouldShowDetails}"  FontSize="14" Text="Entry Details"/>
-			<TextBox Grid.Row="3" Grid.Column="0" IsVisible="{Binding ShouldShowDetails}" IsReadOnly="True" Text="{Binding CurrentEntryYaml}"/>
-			<TextBlock Grid.Row="2" Grid.Column="0" IsVisible="{Binding ShouldShowText}"  FontSize="14" Text="Entry Text"/>
-			<TextBox Grid.Row="3" Grid.Column="0" IsVisible="{Binding ShouldShowText}" IsReadOnly="True" Text="{Binding CurrentEntryText}"/>
+			<TextBlock Grid.Row="2" Grid.Column="0" IsVisible="{Binding ViewingDetails}"  FontSize="14" Text="Entry Details"/>
+			<TextBox Grid.Row="3" Grid.Column="0" IsVisible="{Binding ViewingDetails}" IsReadOnly="True" Text="{Binding CurrentEntryYaml}"/>
+			<TextBlock Grid.Row="2" Grid.Column="0" IsVisible="{Binding ViewingText}" FontSize="14" Text="Entry Text (Read Only)"/>
+			<TextBox Grid.Row="3" Grid.Column="0" IsVisible="{Binding ViewingText}" IsReadOnly="True" Text="{Binding CurrentEntryText}"/>
+			<TextBlock Grid.Row="2" Grid.Column="0" IsVisible="{Binding EditingText}" FontSize="14" Text="Entry Text"/>
+			<TextBox Grid.Row="3" Grid.Column="0" IsVisible="{Binding EditingText}" Text="{Binding CurrentEntryEditableText}"/>
+			<Button Grid.Row="4" Grid.Column="0" IsVisible="{Binding EditingText}" HorizontalAlignment="Right" Command="{Binding SaveTextEdits}" Content="Save Changes"/>
 		</Grid>
 	</Grid>
 

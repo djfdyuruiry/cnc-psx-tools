@@ -44,9 +44,11 @@ namespace CncPsxLib
 
         public string FileName { get; set; }
 
+        public string HexFileName => $"{Index.ToString("X").PadLeft(8, '0')}.{FileExtension}";
+
         public string FileExtension => Path.GetExtension(FileName).Remove(0, 1);
 
-        public string HexFileName => $"{Index.ToString("X").PadLeft(8, '0')}.{FileExtension}";
+        public bool IsTextFile => FileConstants.TEXT_EXTENSIONS.Contains(FileExtension.ToUpper());
 
         // unknown what this value means when non-zero
         public byte[] LeadInBytes { get; set; }
