@@ -346,7 +346,9 @@ namespace MixFileManager.ViewModels
                 return;
             }
 
-            using var textStream = new MemoryStream(Encoding.ASCII.GetBytes(CurrentEntryEditableText));
+            using var textStream = new MemoryStream(
+                Encoding.ASCII.GetBytes(CurrentEntryEditableText)
+            );
 
             await ReplaceFileContents(textStream);
         }
@@ -358,13 +360,13 @@ namespace MixFileManager.ViewModels
                 return;
             }
 
-            _fileOpenDialog.Filters?.Clear();
-            _fileOpenDialog.Filters = new List<FileDialogFilter> {
+            _fileOpenDialog.Filters!.Clear();
+            _fileOpenDialog.Filters!.Add(
                 new FileDialogFilter
                 {
                     Extensions = new List<string> { CurrentEntry.FileExtension }
                 }
-            };
+            );
 
             var filePathResult = await _fileOpenDialog.ShowAsync(activeWindow);
 
@@ -374,6 +376,8 @@ namespace MixFileManager.ViewModels
             }
 
             using var readStream = File.OpenRead(filePathResult.First());
+
+            await ReplaceFileContents(readStream);
         }
     }
 }
