@@ -2,7 +2,7 @@
 
 namespace CncPsxLib
 {
-    public class MixFileEditor
+    public class MixFile
     {
         public FatFile FileTable { get; }
 
@@ -12,7 +12,7 @@ namespace CncPsxLib
 
         public List<FatFileEntry> FileEntries => IsXaMixFile ? FileTable.XaFileEntries : FileTable.MixFileEntries;
 
-        public MixFileEditor(FatFile fileTable, string mixFilePath)
+        public MixFile(FatFile fileTable, string mixFilePath)
         {
             FileTable = fileTable;
             MixFilePath = mixFilePath;
@@ -31,6 +31,11 @@ namespace CncPsxLib
 
         public async Task AddFile(FatFileEntry entry, Stream entryData)
         {
+            if (IsXaMixFile)
+            {
+                throw new NotImplementedException("Adding files to a XA archive is not working yet");
+            }
+
             FileEntries.Add(entry);
 
             using (var writer = MixFileWriter.Open(MixFilePath))
@@ -44,6 +49,11 @@ namespace CncPsxLib
 
         public async Task ReplaceFile(FatFileEntry fileEntry, Stream newData)
         {
+            if (IsXaMixFile)
+            {
+                throw new NotImplementedException("Replacing files in a XA archive is not working yet");
+            }
+
             var tmpFile = Path.GetTempFileName();
 
             fileEntry.SizeInBytes = (uint)newData.Length;

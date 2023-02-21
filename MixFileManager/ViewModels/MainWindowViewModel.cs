@@ -51,18 +51,20 @@ namespace MixFileManager.ViewModels
         private readonly ISerializer _yamlSerialiser;
 
         private string _windowTitle;
-        private FatFile? _fatFile;
-        private string? _mixFilePath;
-        private bool _isXaMixFile;
-        private bool _entryIsSelected;
+
+        private MixFile? _mixFile;
         private FatFileEntry? _currentEntry;
+
+        private bool _entryIsSelected;
         private bool _currentEntryIsTextFile;
-        private bool _viewingDetails;
-        private bool _viewingText;
-        private bool _editingText;
+
         private string? _currentEntryYaml;
         private string? _currentEntryText;
         private string? _currentEntryEditableText;
+
+        private bool _viewingDetails;
+        private bool _viewingText;
+        private bool _editingText;
 
         public string WindowTitle 
         {
@@ -191,9 +193,7 @@ namespace MixFileManager.ViewModels
             WindowTitle = DEFAULT_WINDOW_TITLE;
             _fileOpenDialog.Filters = new List<FileDialogFilter>();
 
-            _fatFile = null;
-            _mixFilePath = null;
-            _isXaMixFile = false;
+            _mixFile = null;
 
             FileEntries.Clear();
             
@@ -210,15 +210,13 @@ namespace MixFileManager.ViewModels
             CurrentEntryYaml = _yamlSerialiser.Serialize(CurrentEntry!);
             CurrentEntryIsTextFile = CurrentEntry.IsTextFile;
 
-            if (!CurrentEntry.IsTextFile || _mixFilePath is null)
+            if (!CurrentEntry.IsTextFile || _mixFile is null)
             {
                 return;
             }
 
-            using var reader = MixFileReader.Open(_mixFilePath);
-      
             CurrentEntryText = Encoding.ASCII.GetString(
-                await reader.ReadFile(CurrentEntry)
+                await _mixFile.ReadFile(CurrentEntry)
             );
             CurrentEntryEditableText = new string(CurrentEntryText);
         }
@@ -240,7 +238,7 @@ namespace MixFileManager.ViewModels
             await SetCurrentEntry(currentEntry!);
         }
 
-        private async Task LoadFile(string filePath)
+        private async Task LoadFile(string filePath, bool loadingMixFile)
         {
             var fatFilePath = Path.GetExtension(filePath).ToUpper() == $".{FAT_EXTENSION}"
                 ? filePath
@@ -252,23 +250,24 @@ namespace MixFileManager.ViewModels
                 return;
             }
 
-            _fatFile = await _fatFileReader.Read(fatFilePath);
-            _mixFilePath = Path.ChangeExtension(
+            var mixFilePath = Path.ChangeExtension(
                 fatFilePath,
-                _isXaMixFile ? XA_EXTENSION : MIX_EXTENSION
+                loadingMixFile ? MIX_EXTENSION : XA_EXTENSION 
             );
 
-            if (!File.Exists(_mixFilePath))
+            if (!File.Exists(mixFilePath))
             {
                 // TODO: raise error
                 return;
             }
 
+            var fatFile = await _fatFileReader.Read(fatFilePath);
+            _mixFile = new MixFile(fatFile, mixFilePath);
 
             FileEntries.Clear();
-            FileEntries.AddRange(_isXaMixFile ? _fatFile.XaFileEntries : _fatFile.MixFileEntries);
+            FileEntries.AddRange(_mixFile.FileEntries);
 
-            WindowTitle = $"{DEFAULT_WINDOW_TITLE} - {filePath}";
+            WindowTitle = $"{DEFAULT_WINDOW_TITLE} - {_mixFile.MixFilePath}";
         }
 
         public async Task DoLoadFile(Window activeWindow, bool loadingMixFile = false)
@@ -287,14 +286,12 @@ namespace MixFileManager.ViewModels
 
             Reset();
 
-            _isXaMixFile = !loadingMixFile;
-
-            await LoadFile(filePathResult.First());
+            await LoadFile(filePathResult.First(), loadingMixFile);
         }
 
         public async Task DoExtractFile(Window activeWindow)
         {
-            if (_mixFilePath is null || CurrentEntry is null)
+            if (_mixFile is null || CurrentEntry is null)
             {
                 return;
             }
@@ -319,23 +316,20 @@ namespace MixFileManager.ViewModels
             }
 
             using var writer = File.OpenWrite(extractPath);
-            using var reader = MixFileReader.Open(_mixFilePath);
 
-            writer.Write(await reader.ReadFile(CurrentEntry));
+            writer.Write(await _mixFile.ReadFile(CurrentEntry));
         }
 
         private async Task ReplaceFileContents(Stream readStream)
         {
-            if (_fatFile is null || _mixFilePath is null || CurrentEntry is null)
+            if (_mixFile is null || CurrentEntry is null)
             {
                 return;
             }
 
-            var mixFileManager = new MixFileEditor(_fatFile, _mixFilePath);
+            await _mixFile.ReplaceFile(CurrentEntry, readStream);
 
-            await mixFileManager.ReplaceFile(CurrentEntry, readStream);
-
-            await LoadFile(_fatFile.Path);
+            await LoadFile(_mixFile.FileTable.Path, !_mixFile.IsXaMixFile);
             await SetCurrentEntry(FileEntries.First(e => e.Index == CurrentEntry.Index));
         }
 
