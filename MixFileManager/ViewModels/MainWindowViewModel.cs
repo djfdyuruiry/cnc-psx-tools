@@ -148,7 +148,6 @@ namespace MixFileManager.ViewModels
         {
             _fileOpenDialog = new OpenFileDialog()
             {
-                Directory = "../../../../reference-files/tiberian-dawn/nod",
                 InitialFileName = "DATA.FAT",
                 Filters = new List<FileDialogFilter>()
             };

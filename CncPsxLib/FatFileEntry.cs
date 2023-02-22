@@ -30,7 +30,7 @@ namespace CncPsxLib
 
             return new FatFileEntry
             {
-                FileName = Encoding.ASCII.GetString(bytes[..12]).Replace("\0", string.Empty),
+                FileName = Encoding.ASCII.GetString(bytes[..12]).Split("\0").First(),
                 LeadInBytes = bytes[12..16],
                 OffsetInCdSectors = (BitConverter.ToUInt32(bytes[16..20])),
                 CdSectorSizeInBytes = chunkSize,
