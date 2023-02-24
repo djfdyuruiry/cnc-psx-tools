@@ -91,43 +91,12 @@ namespace MixFileExtractor
                 entries = fatFile.XaFileEntries;
             }
 
-            // var manager = new MixFileManager(fatFile, opts.MixFilePath);
-
-            // var entry = fatFile.MixFileEntries.First(e => e.FileName == "SCB01EA.INI");
-
-            // using (var entryStream = File.OpenRead(@"C:\Users\Matthew\Downloads\SCB01EA.INI"))
-            // {
-            //     await manager.ReplaceFile(entry, entryStream);
-            // }
-
             using (var mixFile = MixFileReader.Open(opts.MixFilePath))
             {
                 await ExtractMixFileEntries(
                     mixFile, filesToExtract, filesToIgnore, entries, opts.OutputPathOrDefault
                 );
             }
-
-            //using (var mixFile = MixFileWriter.Open("DATA.MIX"))
-            //{
-            //    foreach (var entry in entries)
-            //    {
-            //        var fileName = entry.FileName;
-            //        var sanitizedFileName = fileName.Replace(
-            //            ".",
-            //            $"-1."
-            //        );
-
-            //        if (!File.Exists(fileName) && File.Exists(sanitizedFileName))
-            //        {
-            //            fileName = sanitizedFileName;
-            //        }
-
-            //        using (var entryData = File.OpenRead($"DATA/{fileName}"))
-            //        {
-            //            await mixFile.WriteFile(entry, entryData);
-            //        }
-            //    }    
-            //}
 
             return 0;
         }

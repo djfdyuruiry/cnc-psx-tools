@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 
-namespace MixFileManager.Views
+namespace mkpsxisoUI.Views
 {
     public partial class MainWindow : Window
     {

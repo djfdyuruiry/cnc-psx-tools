@@ -1,22 +1,26 @@
-using Microsoft.Extensions.DependencyInjection;
-
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using mkpsxisoUI.ViewModels;
+using mkpsxisoUI.Views;
 
-using MixFileManager.Views;
-
-namespace MixFileManager
+namespace mkpsxisoUI
 {
     public partial class App : Application
     {
-        public override void Initialize() => AvaloniaXamlLoader.Load(this);
+        public override void Initialize()
+        {
+            AvaloniaXamlLoader.Load(this);
+        }
 
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = AppServices.Provider.GetService<MainWindow>();
+                desktop.MainWindow = new MainWindow
+                {
+                    DataContext = new MainWindowViewModel(),
+                };
             }
 
             base.OnFrameworkInitializationCompleted();
