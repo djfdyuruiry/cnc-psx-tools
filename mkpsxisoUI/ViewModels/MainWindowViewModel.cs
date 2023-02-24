@@ -15,17 +15,22 @@ namespace mkpsxisoUI.ViewModels
     {
         private const string DEFAULT_BIN_PATH = "./mkpsxiso";
 
-        private readonly ReleaseDownloader _releaseDownloader = new();
+        private readonly ActivityLogger _activityLogger;
+        private readonly ReleaseDownloader _releaseDownloader;
         private BinaryWrapper? _binaryWrapper;
 
         private string? _binaryPath;
         private string _version;
 
-        private string? _discImagePath;
+        private string? _discImageInputPath;
         private string? _outputPath;
         private string? _xmlOutputPath;
 
+        private string? _discImageOutputPath;
         private string? _xmlInputPath;
+
+        private string? _processOutput;
+        private int? _outputLength;
 
         public string? BinaryPath
         {
@@ -39,10 +44,10 @@ namespace mkpsxisoUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _version, value);
         }
 
-        public string? DiscImagePath
+        public string? DiscImageInputPath
         {
-            get => _discImagePath;
-            set => this.RaiseAndSetIfChanged(ref _discImagePath, value);
+            get => _discImageInputPath;
+            set => this.RaiseAndSetIfChanged(ref _discImageInputPath, value);
         }
 
         public string? OutputPath
@@ -57,23 +62,47 @@ namespace mkpsxisoUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _xmlOutputPath, value);
         }
 
+        public string? DiscImageOutputPath
+        {
+            get => _discImageOutputPath;
+            set => this.RaiseAndSetIfChanged(ref _discImageOutputPath, value);
+        }
+
         public string? XmlInputPath
         {
             get => _xmlInputPath;
             set => this.RaiseAndSetIfChanged(ref _xmlInputPath, value);
         }
 
+        public string? ProcessOutput
+        {
+            get => _processOutput;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _processOutput, value);
+                OutputLength = _processOutput?.Length ?? 0;
+            }
+        }
+
+        public int? OutputLength
+        {
+            get => _outputLength;
+            set => this.RaiseAndSetIfChanged(ref _outputLength, value);
+        }
+
         public ReactiveCommand<Window, Unit> PickBinaryPath { get; }
-        
-        public ReactiveCommand<Unit, Unit> GetLatestRelease { get;  }
-        
-        public ReactiveCommand<Window, Unit> PickDiscImagePath { get; }
-        
+
+        public ReactiveCommand<Unit, Unit> GetLatestRelease { get; }
+
+        public ReactiveCommand<Window, Unit> PickDiscImageInputPath { get; }
+
         public ReactiveCommand<Window, Unit> PickOutputPath { get; }
-        
+
         public ReactiveCommand<Window, Unit> PickXmlOutputPath { get; }
 
         public ReactiveCommand<Unit, Unit> DumpIso { get; }
+
+        public ReactiveCommand<Window, Unit> PickDiscImageOutputPath { get; }
 
         public ReactiveCommand<Window, Unit> PickXmlInputPath { get; }
 
@@ -83,33 +112,46 @@ namespace mkpsxisoUI.ViewModels
         {
             _version = "???";
 
+            _activityLogger = new(l =>
+                ProcessOutput = (ProcessOutput ?? string.Empty) + l
+            );
+            _releaseDownloader = new(_activityLogger);
+
             PickBinaryPath = ReactiveCommand.CreateFromTask<Window>(
                 async w => await PickFolder(w, InitBinary)
             );
 
             GetLatestRelease = ReactiveCommand.CreateFromTask(DoGetLatestRelease);
 
-            PickDiscImagePath = ReactiveCommand.CreateFromTask<Window>(
-                async w => await PickFile(w, "*", async f => DiscImagePath = f)
+            PickDiscImageInputPath = ReactiveCommand.CreateFromTask<Window>(
+                async w => await PickFile(w, "*", f => DiscImageInputPath = f)
             );
 
             PickOutputPath = ReactiveCommand.CreateFromTask<Window>(
-                async w => await PickFolder(w, async f => OutputPath = f)
+                async w => await PickFolder(w, f => OutputPath = f)
             );
 
-            // TODO: use file save dialog instead of open (browse is broken)
-            PickXmlOutputPath = ReactiveCommand.CreateFromTask<Window>(
-                async w => await PickFile(w, "xml", async f => XmlOutputPath = f)
+            PickXmlOutputPath = ReactiveCommand.CreateFromTask<Window>(DoPickXmlOutputPath);
+
+            DumpIso = ReactiveCommand.CreateFromTask(() =>
+            {
+                ProcessOutput = string.Empty;
+                return _binaryWrapper?.DumpIso(DiscImageInputPath!, OutputPath!, XmlOutputPath!) ?? Task.CompletedTask;
+            });
+
+            PickDiscImageOutputPath = ReactiveCommand.CreateFromTask<Window>(
+                async w => await PickFile(w, "*", f => DiscImageOutputPath = f)
             );
-
-            DumpIso = ReactiveCommand.CreateFromTask(async () => await _binaryWrapper?.DumpIso(DiscImagePath!, OutputPath!, XmlOutputPath!));
-
-            // TODO: output path for image
-            MakeIso = ReactiveCommand.CreateFromTask(async () => await _binaryWrapper?.BuildIso(XmlInputPath!));
 
             PickXmlInputPath = ReactiveCommand.CreateFromTask<Window>(
-                async w => await PickFile(w, "xml", async f => XmlInputPath = f)
+                async w => await PickFile(w, "xml", f => XmlInputPath = f)
             );
+
+            MakeIso = ReactiveCommand.CreateFromTask(() =>
+            {
+                ProcessOutput = string.Empty;
+                return _binaryWrapper?.BuildIso(XmlInputPath!) ?? Task.CompletedTask;
+            });
         }
 
         private async Task DoGetLatestRelease()
@@ -125,16 +167,16 @@ namespace mkpsxisoUI.ViewModels
         {
             BinaryPath = binaryPath;
 
-            _binaryWrapper = new BinaryWrapper(BinaryPath);
+            _binaryWrapper = new BinaryWrapper(BinaryPath, _activityLogger);
 
             Version = await _binaryWrapper.GetVersion();
         }
 
         private async Task PickFolder(Window activeWindow, Func<string, Task> setAction)
         {
-            var fodlerDialog = new OpenFolderDialog();
+            var folderDialog = new OpenFolderDialog();
 
-            var folderResult = await fodlerDialog.ShowAsync(activeWindow);
+            var folderResult = await folderDialog.ShowAsync(activeWindow);
 
             if (folderResult is null)
             {
@@ -144,7 +186,13 @@ namespace mkpsxisoUI.ViewModels
             await setAction(folderResult);
         }
 
-        private async Task PickFile(Window activeWindow, string fileExtension, Func<string, Task> setAction)
+        private async Task PickFolder(Window activeWindow, Action<string> setAction) =>
+            await PickFolder(activeWindow, s => {
+                setAction(s);
+                return Task.CompletedTask;
+            });
+
+        private async Task PickFile(Window activeWindow, string fileExtension, Action<string> setAction)
         {
             var fileDialog = new OpenFileDialog()
             {
@@ -156,6 +204,7 @@ namespace mkpsxisoUI.ViewModels
                     }
                 }
             };
+
             var dialogResult = await fileDialog.ShowAsync(activeWindow);
 
             if ((dialogResult?.Length ?? 0) < 1)
@@ -163,7 +212,29 @@ namespace mkpsxisoUI.ViewModels
                 return;
             }
 
-            await setAction(dialogResult!.First());
+            setAction(dialogResult!.First());
+        }
+
+        private async Task DoPickXmlOutputPath(Window activeWindow)
+        {
+            var fileDialog = new SaveFileDialog()
+            {
+                Filters = new()
+                {
+                    new()
+                    {
+                        Extensions = new() { "xml" }
+                    }
+                }
+            };
+            var dialogResult = await fileDialog.ShowAsync(activeWindow);
+
+            if ((dialogResult?.Length ?? 0) < 1)
+            {
+                return;
+            }
+
+            XmlOutputPath = dialogResult;
         }
     }
 }

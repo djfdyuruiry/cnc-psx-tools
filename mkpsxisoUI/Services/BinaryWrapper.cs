@@ -14,10 +14,12 @@ namespace mkpsxisoUI.Services
         private readonly string _mkBinPath;
         private readonly string _dumpBinPath;
 
+        private readonly ActivityLogger _logger;
         private readonly Regex _versionRegex = new Regex(@"DUMPSXISO ([^ ]+) -");
 
-        public BinaryWrapper(string installPath)
+        public BinaryWrapper(string installPath, ActivityLogger logger)
         {
+            _logger = logger;
             _installPath = Path.GetFullPath(installPath);
             (_dumpBinPath, _mkBinPath) = FindBinariesInInstallPath();
         }
@@ -36,6 +38,9 @@ namespace mkpsxisoUI.Services
             {
                 throw new FileNotFoundException($"Install path does not contain mkpsxiso binaries: {_installPath}");
             }
+
+            _logger.LogLine($"Found path to dumpsxiso: {dumpCandidates.First()}");
+            _logger.LogLine($"Found path to mkpsxiso: {mkCandidates.First()}");
 
             return (dumpCandidates.First(), mkCandidates.First());
         }
@@ -59,18 +64,29 @@ namespace mkpsxisoUI.Services
                 }
             };
 
-            process.OutputDataReceived += (_, o) => output.Add(o.Data ?? string.Empty);
-            process.ErrorDataReceived += (_, o) => output.Add(o.Data ?? string.Empty);
+            DataReceivedEventHandler captureOutput = (_, o) =>
+                output.Add(o.Data ?? string.Empty);
+
+            process.OutputDataReceived += captureOutput;
+            process.ErrorDataReceived += captureOutput;
+
+            _logger.LogLine($"\n[Running Command] {Path.GetFileName(binaryPath)} {argString}\n");
+
             process.Start();
             process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
 
             await process.WaitForExitAsync();
 
+            var outputText = string.Join('\n', output);
+
             if (process.ExitCode != 0)
             {
-                throw new($"{binaryPath} returned a non-zero exit code: {process.ExitCode}\n" +
-                    $"{string.Join('\n', output)}");
+                throw new($"{binaryPath} returned a non-zero exit code: {process.ExitCode}\n{outputText}");
             }
+
+            // TODO: output in realtime (fix view bug not showing all output)
+            _logger.LogLine(outputText);
 
             return output;
         }
