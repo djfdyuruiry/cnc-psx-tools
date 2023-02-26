@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+	<OutputType>Winexe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
-    <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
+	<PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
+	<SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <PublishReadyToRun>true</PublishReadyToRun>
+	<PublishReadyToRun Condition="'$(Configuration)' == 'Release'">true</PublishReadyToRun>
     <Nullable>enable</Nullable>
   
     <!--Avalonia does not support TrimMode=link currently,but we are working on that https://github.com/AvaloniaUI/Avalonia/issues/6892 -->

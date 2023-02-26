@@ -56,7 +56,8 @@ namespace MixFileManager.ViewModels
         private FatFileEntry? _currentEntry;
 
         private bool _entryIsSelected;
-        private bool _currentEntryIsTextFile;
+        private bool _nonXaEntryIsSelected;
+        private bool _currentEntryIsNonXaTextFile;
 
         private string? _currentEntryYaml;
         private string? _currentEntryText;
@@ -80,6 +81,11 @@ namespace MixFileManager.ViewModels
             get => _entryIsSelected;
             set => this.RaiseAndSetIfChanged(ref _entryIsSelected, value);
         }
+        public bool NonXaEntryIsSelected
+        {
+            get => _nonXaEntryIsSelected;
+            set => this.RaiseAndSetIfChanged(ref _nonXaEntryIsSelected, value);
+        }
 
         public FatFileEntry? CurrentEntry
         {
@@ -87,10 +93,10 @@ namespace MixFileManager.ViewModels
             set => this.RaiseAndSetIfChanged(ref _currentEntry, value);
         }
 
-        public bool CurrentEntryIsTextFile
+        public bool CurrentEntryIsNonXaTextFile
         {
-            get => _currentEntryIsTextFile;
-            set => this.RaiseAndSetIfChanged(ref _currentEntryIsTextFile, value);
+            get => _currentEntryIsNonXaTextFile;
+            set => this.RaiseAndSetIfChanged(ref _currentEntryIsNonXaTextFile, value);
         }
 
         public bool ViewingDetails
@@ -182,8 +188,9 @@ namespace MixFileManager.ViewModels
         private void ResetCurrentEntry()
         {
             EntryIsSelected = false;
+            NonXaEntryIsSelected = false;
             CurrentEntry = null;
-            CurrentEntryIsTextFile = false;
+            CurrentEntryIsNonXaTextFile = false;
             CurrentEntryYaml = null;
             CurrentEntryText = null;
             CurrentEntryEditableText = null;
@@ -204,14 +211,20 @@ namespace MixFileManager.ViewModels
 
         private async Task SetCurrentEntry(FatFileEntry entry)
         {
+            if (_mixFile is null)
+            {
+                return;
+            }
+
             ResetCurrentEntry();
 
             EntryIsSelected = true;
+            NonXaEntryIsSelected = !_mixFile.IsXaMixFile;
             CurrentEntry = entry;
             CurrentEntryYaml = _yamlSerialiser.Serialize(CurrentEntry!);
-            CurrentEntryIsTextFile = CurrentEntry.IsTextFile;
+            CurrentEntryIsNonXaTextFile = CurrentEntry.IsTextFile && !_mixFile.IsXaMixFile;
 
-            if (!CurrentEntry.IsTextFile || _mixFile is null)
+            if (!CurrentEntry.IsTextFile)
             {
                 return;
             }

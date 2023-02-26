@@ -1,12 +1,12 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:MixFileManager.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
         xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
         xmlns:ic="using:Avalonia.Xaml.Interactions.Custom"
-		mc:Ignorable="d"
+		xmlns:vm="using:MixFileManager.ViewModels"
+        mc:Ignorable="d"
 		d:DesignWidth="1024"
 		d:DesignHeight="768"
         x:Class="MixFileManager.Views.MainWindow"
@@ -34,6 +34,7 @@
 					</TreeDataTemplate>
 				</TreeView.ItemTemplate>
 			</TreeView>
+
 			<StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Spacing="5">
 				<Button Command="{Binding LoadMixFile}"
 						CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
@@ -43,37 +44,40 @@
 						Content="Load XA File"/>
 			</StackPanel>
 		</Grid>
+
 		<Grid Grid.Row="0" Grid.Column="1" ColumnDefinitions="*" RowDefinitions="0.75*,2*,1*,15*,1.25*" Margin="5">
 			<TextBlock Grid.Row="0" Grid.Column="0" FontSize="14" Text="Manage Entry"/>
 			<Border Grid.Row="1" Grid.Column="0">
 				<StackPanel Orientation="Horizontal" Spacing="5">
 					<Button IsEnabled="{Binding EntryIsSelected}"
 							Command="{Binding ViewDetails}" Content="View Details"/>
-					<Button IsEnabled="{Binding CurrentEntryIsTextFile}"
+					<Button IsEnabled="{Binding CurrentEntryIsNonXaTextFile}"
 							Command="{Binding ViewText}"
 							Content="View Text"/>
-					<Button IsEnabled="{Binding CurrentEntryIsTextFile}"
+					<Button IsEnabled="{Binding CurrentEntryIsNonXaTextFile}"
 							Command="{Binding EditText}"
 							Content="Edit Text"/>
 					<Button IsEnabled="{Binding EntryIsSelected}"
 							Command="{Binding ExtractFile}"
 							CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
 							Content="Extract"/>
-					<Button IsEnabled="{Binding EntryIsSelected}"
+					<Button IsEnabled="{Binding NonXaEntryIsSelected}"
 							Command="{Binding ReplaceFile}"
 							CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
 							Content="Replace"/>
 					<Button IsEnabled="False" Content="Delete"/>
 				</StackPanel>
 			</Border>
+			
 			<TextBlock Grid.Row="2" Grid.Column="0" IsVisible="{Binding ViewingDetails}"  FontSize="14" Text="Entry Details"/>
 			<TextBox Grid.Row="3" Grid.Column="0" IsVisible="{Binding ViewingDetails}" IsReadOnly="True" Text="{Binding CurrentEntryYaml}"/>
+			
 			<TextBlock Grid.Row="2" Grid.Column="0" IsVisible="{Binding ViewingText}" FontSize="14" Text="Entry Text (Read Only)"/>
 			<TextBox Grid.Row="3" Grid.Column="0" IsVisible="{Binding ViewingText}" IsReadOnly="True" Text="{Binding CurrentEntryText}"/>
+			
 			<TextBlock Grid.Row="2" Grid.Column="0" IsVisible="{Binding EditingText}" FontSize="14" Text="Entry Text"/>
 			<TextBox Grid.Row="3" Grid.Column="0" IsVisible="{Binding EditingText}" Text="{Binding CurrentEntryEditableText}"/>
 			<Button Grid.Row="4" Grid.Column="0" IsVisible="{Binding EditingText}" HorizontalAlignment="Right" Command="{Binding SaveTextEdits}" Content="Save Changes"/>
 		</Grid>
 	</Grid>
-
 </Window>
