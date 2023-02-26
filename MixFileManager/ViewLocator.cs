@@ -7,7 +7,7 @@ using MixFileManager.ViewModels;
 
 namespace MixFileManager
 {
-    public class ViewLocator : IDataTemplate
+    internal class ViewLocator : IDataTemplate
     {
         public IControl Build(object data)
         {

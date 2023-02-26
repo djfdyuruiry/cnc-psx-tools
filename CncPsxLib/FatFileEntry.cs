@@ -28,7 +28,7 @@ namespace CncPsxLib
             var isInMixFile = BitConverter.ToUInt16(bytes[24..26]) == 0;
             var chunkSize = isInMixFile ? MIX_CD_SECTOR_SIZE : XA_CD_SECTOR_SIZE;
 
-            return new FatFileEntry
+            return new()
             {
                 FileName = Encoding.ASCII.GetString(bytes[..12]).Split("\0").First(),
                 LeadInBytes = bytes[12..16],
@@ -42,7 +42,9 @@ namespace CncPsxLib
 
         public int Index { get; set; }
 
+#pragma warning disable CS8618 
         public string FileName { get; set; }
+#pragma warning restore CS8618
 
         public string HexFileName => $"{Index.ToString("X").PadLeft(8, '0')}.{FileExtension}";
 
@@ -51,7 +53,9 @@ namespace CncPsxLib
         public bool IsTextFile => FileConstants.TEXT_EXTENSIONS.Contains(FileExtension.ToUpper());
 
         // unknown what this value means when non-zero
+#pragma warning disable CS8618
         public byte[] LeadInBytes { get; set; }
+#pragma warning restore CS8618 
 
         public uint OffsetInCdSectors { get; set; }
 
@@ -80,7 +84,9 @@ namespace CncPsxLib
         public string SizeInByteUnits => SizeInBytes.FormatAsByteUnit();
 
         // unknown what this value means when non-zero
+#pragma warning disable CS8618
         public byte[] LeadOutBytes { get; set; }
+#pragma warning restore CS8618
 
         public bool IsInMixFile { get; set; }
 

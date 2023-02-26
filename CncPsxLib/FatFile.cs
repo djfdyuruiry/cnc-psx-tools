@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace CncPsxLib
+﻿namespace CncPsxLib
 {
     public class FatFile
     {
@@ -15,7 +13,7 @@ namespace CncPsxLib
                 );
             }
 
-            return new FatFile
+            return new()
             {
                 Path = filePath,
                 MixEntryCount = BitConverter.ToInt32(bytes[..4]),
@@ -23,16 +21,17 @@ namespace CncPsxLib
             };
         }
 
+#pragma warning disable CS8618
         public string Path { get; set; }
 
         public List<FatFileEntry> MixFileEntries { get; set; }
 
         public List<FatFileEntry> XaFileEntries { get; set; }
+#pragma warning restore CS8618
 
         public int MixEntryCount { get; set; }
 
         public int XaEntryCount { get; set; }
-
 
         private void AddFileEntry(FatFileEntry entry, List<FatFileEntry> destination)
         {

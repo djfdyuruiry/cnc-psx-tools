@@ -27,22 +27,22 @@ namespace MixFileManager.ViewModels
 
         static MainWindowViewModel()
         {
-            FAT_FILTER = new FileDialogFilter
+            FAT_FILTER = new()
             {
                 Name = $"File Allocation Table (.{FAT_EXTENSION.ToLower()})",
-                Extensions = new List<string> { FAT_EXTENSION }
+                Extensions = new() { FAT_EXTENSION }
             };
 
-            MIX_FILTER = new FileDialogFilter
+            MIX_FILTER = new()
             {
                 Name = $"MIX Archive ({MIX_EXTENSION.ToLower()})",
-                Extensions = new List<string> { MIX_EXTENSION }
+                Extensions = new() { MIX_EXTENSION }
             };
 
-            XA_FILTER = new FileDialogFilter
+            XA_FILTER = new()
             {
                 Name = $"XA Archive (.{XA_EXTENSION.ToLower()})",
-                Extensions = new List<string> { XA_EXTENSION }
+                Extensions = new() { XA_EXTENSION }
             };
         }
 
@@ -144,12 +144,14 @@ namespace MixFileManager.ViewModels
 
         public ReactiveCommand<Unit, Unit> SaveTextEdits { get; }
 
+#pragma warning disable CS8618 
         public MainWindowViewModel()
+#pragma warning restore CS8618 
         {
-            _fileOpenDialog = new OpenFileDialog()
+            _fileOpenDialog = new()
             {
                 InitialFileName = "DATA.FAT",
-                Filters = new List<FileDialogFilter>()
+                Filters = new()
             };
 
             Reset();
@@ -190,7 +192,7 @@ namespace MixFileManager.ViewModels
         private void Reset()
         {
             WindowTitle = DEFAULT_WINDOW_TITLE;
-            _fileOpenDialog.Filters = new List<FileDialogFilter>();
+            _fileOpenDialog.Filters = new();
 
             _mixFile = null;
 
@@ -261,7 +263,7 @@ namespace MixFileManager.ViewModels
             }
 
             var fatFile = await _fatFileReader.Read(fatFilePath);
-            _mixFile = new MixFile(fatFile, mixFilePath);
+            _mixFile = new(fatFile, mixFilePath);
 
             FileEntries.Clear();
             FileEntries.AddRange(_mixFile.FileEntries);
@@ -299,8 +301,8 @@ namespace MixFileManager.ViewModels
             {
                 Directory = _fileOpenDialog.Directory,
                 InitialFileName = CurrentEntry.FileName,
-                Filters = new List<FileDialogFilter> { 
-                    new FileDialogFilter
+                Filters = new() { 
+                    new()
                     {
                         Extensions = new List<string> { CurrentEntry.FileExtension }
                     }
@@ -355,9 +357,9 @@ namespace MixFileManager.ViewModels
 
             _fileOpenDialog.Filters!.Clear();
             _fileOpenDialog.Filters!.Add(
-                new FileDialogFilter
+                new()
                 {
-                    Extensions = new List<string> { CurrentEntry.FileExtension }
+                    Extensions = new() { CurrentEntry.FileExtension }
                 }
             );
 

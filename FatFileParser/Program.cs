@@ -1,4 +1,6 @@
-﻿using CommandLine;
+﻿using static System.Console;
+
+using CommandLine;
 using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
 
@@ -10,7 +12,7 @@ namespace FatFileParser
     {
         private static async Task OutputFatEntriesAsTable(List<FatFileEntry> fileEntries)
         {   
-            await Console.Out.WriteLineAsync(
+            await Out.WriteLineAsync(
                 @"┌──────────────┬────────────────┬──────────────┐
                   │ File Name    │ Offset         │ Size         │
                   ├──────────────┼────────────────┼──────────────┤".StripLeadingWhitespace()
@@ -18,26 +20,26 @@ namespace FatFileParser
 
             foreach (var entry in fileEntries)
             {
-                await Console.Out.WriteLineAsync(
+                await Out.WriteLineAsync(
                     $"│ {entry.FileName,-12} " +
                     $"│ 0x{entry.HexOffsetInBytes}     " +
                     $"│ {entry.SizeInBytes.FormatAsByteUnit(),-12} │"
                 );
             }
 
-            await Console.Out.WriteLineAsync("└──────────────┴────────────────┴──────────────┘");
+            await Out.WriteLineAsync("└──────────────┴────────────────┴──────────────┘");
         }
  
         private static async Task OutputFatFileAsTable(FatFile fatFile)
         {
-            await Console.Out.WriteLineAsync($"File Path:       {fatFile.Path}");
-            await Console.Out.WriteLineAsync($"MIX Entry Count: {fatFile.MixEntryCount}");
-            await Console.Out.WriteLineAsync($"XA Entry Count:  {fatFile.XaEntryCount}\n");
+            await Out.WriteLineAsync($"File Path:       {fatFile.Path}");
+            await Out.WriteLineAsync($"MIX Entry Count: {fatFile.MixEntryCount}");
+            await Out.WriteLineAsync($"XA Entry Count:  {fatFile.XaEntryCount}\n");
 
-            await Console.Out.WriteLineAsync("******************* MIX Files ******************\n");
+            await Out.WriteLineAsync("******************* MIX Files ******************\n");
             await OutputFatEntriesAsTable(fatFile.MixFileEntries);
 
-            await Console.Out.WriteLineAsync("\n******************* XA Files *******************\n");
+            await Out.WriteLineAsync("\n******************* XA Files *******************\n");
             await OutputFatEntriesAsTable(fatFile.XaFileEntries);
         }
 
@@ -54,7 +56,7 @@ namespace FatFileParser
                         .WithNamingConvention(CamelCaseNamingConvention.Instance)
                         .Build();
 
-                    await Console.Out.WriteLineAsync(
+                    await Out.WriteLineAsync(
                         yamlSerializer.Serialize(fatFile)
                     );
                 }

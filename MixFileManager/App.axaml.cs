@@ -8,7 +8,7 @@ using MixFileManager.Views;
 
 namespace MixFileManager
 {
-    public partial class App : Application
+    internal partial class App : Application
     {
         public override void Initialize() => AvaloniaXamlLoader.Load(this);
 

@@ -4,6 +4,7 @@ using CommandLine;
 
 namespace MixFileExtractor
 {
+#pragma warning disable CS8618 
     internal class CliOptions
     {
         [Option(
@@ -28,7 +29,7 @@ namespace MixFileExtractor
 
         public string FatFilePathOrDefault =>
             FatFilePath ?? Path.Combine(
-                Path.GetDirectoryName(MixFilePath),
+                Path.GetDirectoryName(MixFilePath)!,
                 $"{MixFileName}.FAT"
             );
 
@@ -71,4 +72,5 @@ namespace MixFileExtractor
                 .Select(f => f.Trim().Replace(".", "[.]").Replace("*", ".+"))
                 .Select(f => new Regex(f));
     }
+#pragma warning restore CS8618 
 }
