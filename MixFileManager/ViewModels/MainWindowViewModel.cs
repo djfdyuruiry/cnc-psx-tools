@@ -144,11 +144,13 @@ namespace MixFileManager.ViewModels
 
         public ReactiveCommand<Unit, Unit> EditText { get; }
 
+        public ReactiveCommand<Unit, Unit> SaveTextEdits { get; }
+
         public ReactiveCommand<Window, Unit> ExtractFile { get; }
 
         public ReactiveCommand<Window, Unit> ReplaceFile { get; }
 
-        public ReactiveCommand<Unit, Unit> SaveTextEdits { get; }
+        public ReactiveCommand<Unit, Unit> DeleteFile { get; }
 
 #pragma warning disable CS8618 
         public MainWindowViewModel()
@@ -170,6 +172,7 @@ namespace MixFileManager.ViewModels
             SaveTextEdits = ReactiveCommand.CreateFromTask(DoSaveTextEdits);
             ExtractFile = ReactiveCommand.CreateFromTask<Window>(DoExtractFile);
             ReplaceFile = ReactiveCommand.CreateFromTask<Window>(DoReplaceFile);
+            DeleteFile = ReactiveCommand.CreateFromTask(DoDeleteFile);
         }
 
         public MainWindowViewModel(FatFileReader fatFileReader, ISerializer yamlSerializer) : this()
@@ -386,6 +389,19 @@ namespace MixFileManager.ViewModels
             using var readStream = File.OpenRead(filePathResult.First());
 
             await ReplaceFileContents(readStream);
+        }
+
+        private async Task DoDeleteFile()
+        {
+            if (_mixFile is null || CurrentEntry is null)
+            {
+                return;
+            }
+
+            await _mixFile.DeleteFile(CurrentEntry);
+
+            await LoadFile(_mixFile.FileTable.Path, !_mixFile.IsXaMixFile);
+            ResetCurrentEntry();
         }
     }
 }

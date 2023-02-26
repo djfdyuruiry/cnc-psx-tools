@@ -47,16 +47,11 @@ namespace CncPsxLib
             }
         }
 
-        public async Task ReplaceFile(FatFileEntry fileEntry, Stream newData)
+        private async Task EditDataAtEntry(FatFileEntry fileEntry, bool deleteData = false, Stream? newData = null)
         {
-            if (IsXaMixFile)
-            {
-                throw new NotImplementedException("Replacing files in a XA archive is not working yet");
-            }
-
             var tmpFile = Path.GetTempFileName();
 
-            fileEntry.SizeInBytes = (uint)newData.Length;
+            fileEntry.SizeInBytes = (uint)(newData?.Length ?? 0);
 
             using (var reader = MixFileReader.Open(MixFilePath))
             {
@@ -68,11 +63,16 @@ namespace CncPsxLib
 
                         if (entry != fileEntry)
                         {
+                            if (deleteData && entry.Index > fileEntry.Index)
+                            {
+                                entry.Index--;
+                            }
+
                             await writer.WriteFile(entry, await reader.ReadFile(entry));
                         }
-                        else
+                        else if (!deleteData)
                         {
-                            await writer.WriteFile(entry, newData);
+                            await writer.WriteFile(entry, newData!);
                         }
 
                         entry.OffsetInBytes = currentOffset;
@@ -85,7 +85,32 @@ namespace CncPsxLib
 
             var fatWriter = new FatFileWriter();
 
+            if (deleteData)
+            {
+                FileEntries.Remove(fileEntry);
+            }
+
             await fatWriter.Write(FileTable, FileTable.Path);
+        }
+
+        public async Task ReplaceFile(FatFileEntry fileEntry, Stream fileData)
+        {
+            if (IsXaMixFile)
+            {
+                throw new NotImplementedException("Replacing files in a XA archive is not working yet");
+            }
+
+            await EditDataAtEntry(fileEntry, newData: fileData);
+        }
+
+        public async Task DeleteFile(FatFileEntry fileEntry)
+        {
+            if (IsXaMixFile)
+            {
+                throw new NotImplementedException("Deleting files in a XA archive is not working yet");
+            }
+
+            await EditDataAtEntry(fileEntry, deleteData: true);
         }
     }
 }
