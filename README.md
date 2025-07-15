@@ -1,9 +1,28 @@
 # cnc-psx-tools
+
 Modding tools for Command &amp; Conquer games released on the Sony Playstation
+
+To build:
+
+- Install the dotnet 6 SDK
+- Run: `dotnet build`
 
 ## Mix Manager
 
-Desktop UI app for opening MIX/XA files and editing/replacing/deleting/adding files in them. 
+Cross platform desktop UI app for opening MIX/XA files and editing/replacing/deleting/adding files in them. 
+
+### Building For Linux
+
+By default this app builds a self contained windows app, to target linux instead run the below commands:
+
+```
+# build for linux
+cd MixFileManager
+dotnet publish -c Release -r linux-x64 --self-contained -p:PublishReadyToRun=true
+
+# run the app
+./bin/Release/net6.0/linux-x64/MixFileManager
+```
 
 ## FAT File Parser
 
@@ -19,7 +38,6 @@ C# class library for examining and interacting with files found in C&C games.
 
 - FAT file parsing
 - MIX file reading
-
 
 ---
 
