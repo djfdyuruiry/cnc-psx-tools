@@ -11,7 +11,7 @@ To build:
 
 Cross platform desktop UI app for opening MIX/XA files and editing/replacing/deleting/adding files in them. 
 
-Once you edit the DATA.FAT and DATA.MIX, you can use `mkpsxiso` to repackage the C&C ISO to run it in an emulator or on hardware: https://github.com/Lameguy64/mkpsxiso/releases/tag/v2.10
+Once you edit the DATA.FAT and DATA.MIX, you can use `mkpsxiso` to repackage the C&C ISO to run it in an emulator or on hardware: https://github.com/Lameguy64/mkpsxiso
 
 ### Building For Linux
 
