@@ -1,17 +1,29 @@
 # cnc-psx-tools
 
+![Best Game Ever Made](docs/cnc.jpg)
+
 Modding tools for Command &amp; Conquer games released on the Sony Playstation
+
+---
+
+NOTE: The FAT file format used in these games is documented here: https://github.com/djfdyuruiry/cnc-psx-tools/blob/main/docs/fat-format.md
+
+---
 
 To build:
 
 - Install the dotnet 6 SDK
 - Run: `dotnet build`
 
+### Note: Getting Data Files
+
+Use the `dumpsxio` utility to extract files from a C&C playstation disc image: https://github.com/Lameguy64/mkpsxiso
+
 ## Mix Manager
 
 Cross platform desktop UI app for opening MIX/XA files and editing/replacing/deleting/adding files in them. 
 
-Once you edit the DATA.FAT and DATA.MIX, you can use `mkpsxiso` to repackage the C&C ISO to run it in an emulator or on hardware: https://github.com/Lameguy64/mkpsxiso
+Once you edit the DATA.FAT and DATA.MIX, you can use `mkpsxiso` to repackage the C&C disc image to run it in an emulator or on real hardware: https://github.com/Lameguy64/mkpsxiso
 
 ### Building For Linux
 
