@@ -1,8 +1,20 @@
 # cnc-psx-tools
 
+Modding tools for Command &amp; Conquer games released on the Sony Playstation
+
+**Supported Games**
+
+Command & Conquer (any region)
+
 ![Best Game Ever Made](docs/cnc.jpg)
 
-Modding tools for Command &amp; Conquer games released on the Sony Playstation
+Command & Conquer - Red Alert (any region)
+
+![Best Game Ever Made](docs/ra.jpg)
+
+Command & Conquer - Red Alert Retaliation (aka "Command & Conquer - Retaliation" - any region)
+
+![Best Game Ever Made](docs/rar.jpg)
 
 ---
 
